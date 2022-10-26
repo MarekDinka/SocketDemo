@@ -3,7 +3,7 @@
 ## To launch:
 `git clone https://github.com/MarekDinka/SocketDemo` \
 open 2 consoles, run \
-`java -jar .\SocketServer.jar` \
+`java -jar .\Server.jar` \
 in first and \
-`java -jar .\SocketClient.jar "Message you wish to send"` \
+`java -jar .\Client.jar "Message you wish to send"` \
 in second.

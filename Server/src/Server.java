@@ -56,35 +56,40 @@ public class Server extends Thread {
         private final Socket socket;
         private final PrintWriter out;
         private final BufferedReader in;
-        private final String recognizeMeMessage = "abcd"; //open to suggestions
+        private final String SERVER_PASSWORD = "abcd"; //open to suggestions
 
         public SocketHandler(Socket s) throws IOException {
             socket = s;
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out.println(recognizeMeMessage);
+            out.println(SERVER_PASSWORD);
             if (!"found you!".equals(in.readLine())) {
-                s.close();
-                out.close();
-                in.close();
+                stopSocket();
                 throw new ConnectException("Client did not respond");
             }
+        }
+
+        public void stopSocket() throws IOException {
+            socket.close();
+            out.close();
+            in.close();
         }
 
         @Override
         public void run() {
             String message = null;
-            while (true) {
-                try {
+            try {
+                while (true) {
                     message = in.readLine();
                     if (message == null) {
                         break;
                     }
                     System.out.println(message);
                     out.println("ack");
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+                stopSocket();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
