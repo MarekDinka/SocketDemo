@@ -40,8 +40,7 @@ public class CommunicationHandler {
      */
     public void requestArduinoIps() {
         List<InetAddress> broadcasts = getBroadcastAddresses();
-        try {
-            DatagramSocket socket = new DatagramSocket();
+        try (DatagramSocket socket = new DatagramSocket()) {
             byte[] buff = "Hear me!".getBytes();
             for (InetAddress b : broadcasts) {
                 socket.send(new DatagramPacket(buff, buff.length, b, 4002));

@@ -83,7 +83,7 @@ public class Client {
                 InetAddress address = packet.getAddress();
                 String message = Arrays.toString(buff);
                 if ("Hear me!".equals(message)) {
-                    Client client = new Client(address.toString());
+                    Client client = new Client(Arrays.toString(address.getAddress()));
                     client.sendMessage("Arduino here!");
                 }
             } catch (IOException e) {
