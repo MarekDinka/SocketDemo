@@ -13,6 +13,7 @@ public class Client {
     private final String SERVER_PASSWORD = "abcd";
 
     public Client(String ip) throws ConnectException { // could serve as a base class for all communication with server
+        System.out.println("Trying to send message to ip" + ip);
         boolean serverFound = false;
         for (int port : listOfFreePorts) {
             try {
@@ -83,6 +84,7 @@ public class Client {
                 InetAddress address = packet.getAddress();
                 String message = Arrays.toString(buff);
                 if ("Hear me!".equals(message)) {
+                    System.out.println("Hear me! received");
                     Client client = new Client(Arrays.toString(address.getAddress()));
                     client.sendMessage("Arduino here!");
                 }
