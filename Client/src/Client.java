@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Client {
@@ -13,7 +14,7 @@ public class Client {
     private final String SERVER_PASSWORD = "abcd";
 
     public Client(String ip) throws ConnectException { // could serve as a base class for all communication with server
-        System.out.println("Trying to send message to ip" + ip);
+        System.out.println("Trying to send message to ip " + ip);
         boolean serverFound = false;
         for (int port : listOfFreePorts) {
             try {
@@ -26,7 +27,7 @@ public class Client {
                     in.close();
                     continue;
                 }
-                out.println("found you!");
+//                out.println("found you!");
                 serverFound = true;
                 break;
             } catch (IOException e) {
@@ -42,11 +43,7 @@ public class Client {
         sendMessage(msg, false);
     }
     public void sendMessage(String msg, boolean stayConnected) throws IOException {
-        String resp;
-        do {
-            out.println(msg);
-            resp = in.readLine();
-        } while (!"ack".equals(resp));
+        out.println(msg);
         System.out.println("Message delivered!");
         if (!stayConnected) {
             stopConnection();
@@ -85,7 +82,7 @@ public class Client {
                 String message = Arrays.toString(buff);
                 if ("Hear me!".equals(message)) {
                     System.out.println("Hear me! received");
-                    Client client = new Client(Arrays.toString(address.getAddress()));
+                    Client client = new Client(new String(address.getAddress(), StandardCharsets.UTF_8));
                     client.sendMessage("Arduino here!");
                 }
             } catch (IOException e) {

@@ -2,10 +2,8 @@ package sk.uniba.fmph.Arduino;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class CommunicationHandler {
     private static final CommunicationHandler INSTANCE = new CommunicationHandler();
@@ -51,7 +49,7 @@ public class CommunicationHandler {
     }
 
     public void addArduinoToList(Arduino a) {
-        System.out.println(a.IP);
+        System.out.println(new String(a.IP.getAddress(), StandardCharsets.UTF_8));
         System.out.println("Arduino added!");
         arduinos.add(a);
     }

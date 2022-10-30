@@ -144,7 +144,6 @@ public class Server extends Thread {
                         break;
                     }
                     System.out.println(message);
-                    out.println("ack"); //TCP probably covers this, but just to be sure
                 }
                 stopSocket();
             } catch (IOException e) {
