@@ -79,7 +79,7 @@ public class Client {
                 socket.close();
 
                 InetAddress address = packet.getAddress();
-                String message = Arrays.toString(buff);
+                String message = new String(buff, StandardCharsets.UTF_8);
                 if ("Hear me!".equals(message)) {
                     System.out.println("Hear me! received");
                     Client client = new Client(address.getHostAddress());
