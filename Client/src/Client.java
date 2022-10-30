@@ -2,8 +2,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ConnectException;
-import java.net.Socket;
+import java.net.*;
+import java.util.Arrays;
 
 public class Client {
     private Socket clientSocket;
@@ -37,6 +37,9 @@ public class Client {
         }
     }
 
+    public void sendMessage(String msg) throws IOException {
+        sendMessage(msg, false);
+    }
     public void sendMessage(String msg, boolean stayConnected) throws IOException {
         String resp;
         do {
@@ -63,12 +66,29 @@ public class Client {
 //                    client.sendMessage("aaaaaaaa", true);
 //                    Thread.sleep(1000);
 //                }
-                client.sendMessage(args[0], false);
+                client.sendMessage(args[0]);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            System.out.println("Usage: java -jar SocketClient.jar \"your message\"");
+        } else { //test udp
+//            System.out.println("Usage: java -jar SocketClient.jar \"your message\"");
+            try {
+                DatagramSocket socket = new DatagramSocket(4002);
+                byte[] buff = new byte[256];
+
+                DatagramPacket packet = new DatagramPacket(buff, buff.length);
+                socket.receive(packet);
+                socket.close();
+
+                InetAddress address = packet.getAddress();
+                String message = Arrays.toString(buff);
+                if ("Hear me!".equals(message)) {
+                    Client client = new Client();
+                    client.sendMessage("Arduino here!");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
