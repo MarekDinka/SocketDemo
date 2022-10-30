@@ -10,13 +10,13 @@ public class Client {
     private PrintWriter out;
     private BufferedReader in;
     private final int[] listOfFreePorts = {4002, 4003, 4004, 4005, 4006, 4007, 4008, 4009, 4010, 4011};
-    private final String IP = "127.0.0.1", SERVER_PASSWORD = "abcd";
+    private final String SERVER_PASSWORD = "abcd";
 
-    public Client() throws ConnectException { // could serve as a base class for all communication with server
+    public Client(String ip) throws ConnectException { // could serve as a base class for all communication with server
         boolean serverFound = false;
         for (int port : listOfFreePorts) {
             try {
-                clientSocket = new Socket(IP, port);
+                clientSocket = new Socket(ip, port);
                 out = new PrintWriter(clientSocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 if (!SERVER_PASSWORD.equals(in.readLine())) { // not my server
@@ -61,7 +61,7 @@ public class Client {
     public static void main(String[] args) {
         if (args.length > 0) {
             try {
-                Client client = new Client();
+                Client client = new Client("127.0.0.1");
 //                while (true) {
 //                    client.sendMessage("aaaaaaaa", true);
 //                    Thread.sleep(1000);
@@ -83,7 +83,7 @@ public class Client {
                 InetAddress address = packet.getAddress();
                 String message = Arrays.toString(buff);
                 if ("Hear me!".equals(message)) {
-                    Client client = new Client();
+                    Client client = new Client(address.toString());
                     client.sendMessage("Arduino here!");
                 }
             } catch (IOException e) {

@@ -52,6 +52,8 @@ public class CommunicationHandler {
     }
 
     public void addArduinoToList(Arduino a) {
+        System.out.println(a.IP);
+        System.out.println("Arduino added!");
         arduinos.add(a);
     }
 }

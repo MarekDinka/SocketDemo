@@ -3,7 +3,7 @@ package sk.uniba.fmph.Arduino;
 import java.net.InetAddress;
 
 public class Arduino {
-    private final InetAddress IP;
+    public final InetAddress IP;
 
     public Arduino(InetAddress ip) {
         IP = ip;

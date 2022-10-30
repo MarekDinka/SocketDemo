@@ -108,6 +108,7 @@ public class Server extends Thread {
             } catch (IOException e) {
                 System.out.println("Client did not respond, disconnecting client");
             }
+            System.out.println(message);
             if ("Arduino here!".equals(message)) {
                 CommunicationHandler.getInstance().addArduinoToList(new Arduino(socket.getInetAddress()));
                 return;
