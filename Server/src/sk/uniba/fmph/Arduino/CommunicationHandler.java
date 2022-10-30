@@ -49,7 +49,7 @@ public class CommunicationHandler {
     }
 
     public void addArduinoToList(Arduino a) {
-        System.out.println(new String(a.IP.getAddress(), StandardCharsets.UTF_8));
+        System.out.println(a.IP.getHostAddress());
         System.out.println("Arduino added!");
         arduinos.add(a);
     }

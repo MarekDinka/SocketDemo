@@ -82,7 +82,7 @@ public class Client {
                 String message = Arrays.toString(buff);
                 if ("Hear me!".equals(message)) {
                     System.out.println("Hear me! received");
-                    Client client = new Client(new String(address.getAddress(), StandardCharsets.UTF_8));
+                    Client client = new Client(address.getHostAddress());
                     client.sendMessage("Arduino here!");
                 }
             } catch (IOException e) {
