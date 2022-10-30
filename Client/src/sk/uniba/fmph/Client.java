@@ -1,11 +1,15 @@
+package sk.uniba.fmph;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+/**
+ * Client class for communicating with central server (using TCP or UDP)
+ */
 public class Client {
     private Socket clientSocket;
     private PrintWriter out;
@@ -14,7 +18,6 @@ public class Client {
     private final String SERVER_PASSWORD = "abcd";
 
     public Client(String ip) throws ConnectException { // could serve as a base class for all communication with server
-        System.out.println("Trying to send message to ip " + ip);
         boolean serverFound = false;
         for (int port : listOfFreePorts) {
             try {
@@ -68,7 +71,7 @@ public class Client {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else { //test udp
+        } else { //testing udp
 //            System.out.println("Usage: java -jar SocketClient.jar \"your message\"");
             try {
                 DatagramSocket socket = new DatagramSocket(4002);
@@ -79,7 +82,6 @@ public class Client {
                 socket.close();
 
                 InetAddress address = packet.getAddress();
-//                String message = new String(buff, StandardCharsets.UTF_8);
                 if (Arrays.equals(new byte[]{1, 2, 3, 4}, buff)) {
                     System.out.println("Hear me! received");
                     Client client = new Client(address.getHostAddress());

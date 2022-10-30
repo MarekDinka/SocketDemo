@@ -84,7 +84,7 @@ public class Server extends Thread {
         private final PrintWriter out;
         private final BufferedReader in;
         /**
-         * A 'password' server will send so client can recognize it
+         * A 'password' server will send so client can recognize it, or try different port if wrong server is running on this one
          */
         private final String SERVER_PASSWORD = "abcd"; //open to suggestions
 
