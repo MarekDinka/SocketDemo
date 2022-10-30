@@ -39,9 +39,9 @@ public class CommunicationHandler {
     public void requestArduinoIps() {
         List<InetAddress> broadcasts = getBroadcastAddresses();
         try (DatagramSocket socket = new DatagramSocket()) {
-            byte[] buff = "Hear me!".getBytes();
+            byte[] password = {1, 2, 3, 4};
             for (InetAddress b : broadcasts) {
-                socket.send(new DatagramPacket(buff, buff.length, b, 4002));
+                socket.send(new DatagramPacket(password, password.length, b, 4002));
             }
         } catch (IOException e) {
             e.printStackTrace();

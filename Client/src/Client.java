@@ -72,15 +72,15 @@ public class Client {
 //            System.out.println("Usage: java -jar SocketClient.jar \"your message\"");
             try {
                 DatagramSocket socket = new DatagramSocket(4002);
-                byte[] buff = new byte[256];
+                byte[] buff = new byte[4];
 
                 DatagramPacket packet = new DatagramPacket(buff, buff.length);
                 socket.receive(packet);
                 socket.close();
 
                 InetAddress address = packet.getAddress();
-                String message = new String(buff, StandardCharsets.UTF_8);
-                if ("Hear me!".equals(message)) {
+//                String message = new String(buff, StandardCharsets.UTF_8);
+                if (Arrays.equals(new byte[]{1, 2, 3, 4}, buff)) {
                     System.out.println("Hear me! received");
                     Client client = new Client(address.getHostAddress());
                     client.sendMessage("Arduino here!");
