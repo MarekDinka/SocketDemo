@@ -2,7 +2,6 @@ package sk.uniba.fmph.Arduino;
 
 import java.io.IOException;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CommunicationHandler {
@@ -41,7 +40,9 @@ public class CommunicationHandler {
         try (DatagramSocket socket = new DatagramSocket()) {
             byte[] password = {1, 2, 3, 4};
             for (InetAddress b : broadcasts) {
-                socket.send(new DatagramPacket(password, password.length, b, 4002));
+//                for (int i = 0; i < 100; i++) {
+                    socket.send(new DatagramPacket(password, password.length, b, 4002));
+//                }
             }
         } catch (IOException e) {
             e.printStackTrace();
