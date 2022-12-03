@@ -62,7 +62,7 @@ public class Server { //TODO -> sort out exceptions
         private final static byte[] END_OF_SEGMENT_MESSAGE = {69, 78, 68};
         private final static byte[] CONTROLLER_RECOGNIZE_ME_MESSAGE = {67, 79, 78, 84, 82, 79, 76};
         private final Socket socket;
-        private final BufferedOutputStream out;
+        private final OutputStream out;
         private final BufferedInputStream in;
         /**
          * A 'password' server will send so client can recognize it, or try different port if wrong server is running on this one
@@ -77,7 +77,7 @@ public class Server { //TODO -> sort out exceptions
         public SocketHandler(Socket s) throws IOException {
             socket = s;
 //            out =  new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
-            out = new BufferedOutputStream(socket.getOutputStream());
+            out = socket.getOutputStream();
             in = new BufferedInputStream(socket.getInputStream());
             System.out.println("Password send");
             writeBytes(SERVER_PASSWORD);

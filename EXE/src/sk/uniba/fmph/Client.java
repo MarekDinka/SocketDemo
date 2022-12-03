@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class Client {
     private Socket clientSocket;
-    private BufferedOutputStream out;
+    private OutputStream out;
     private BufferedInputStream in;
     private final static int PORT = 4002;
     private final static byte[] SERVER_PASSWORD = {1,2,3,4};
@@ -72,7 +72,7 @@ public class Client {
         try {
             clientSocket = new Socket(ip, PORT);
             clientSocket.setSoTimeout(10000);
-            out = new BufferedOutputStream(clientSocket.getOutputStream());
+            out = clientSocket.getOutputStream();
             in = new BufferedInputStream(clientSocket.getInputStream());
             System.out.println("want to read password");
             password = readLine();
