@@ -47,6 +47,7 @@ public class Client {
             System.out.println("reading");
             out.write(buffer, 0, count);
         }
+        System.out.println("done reading");
         return out.toByteArray();
     }
 
@@ -68,8 +69,10 @@ public class Client {
             clientSocket.setSoTimeout(10000);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
+            System.out.println("want to read password");
             password = readLine();
             System.out.println("b");
+
         } catch (ConnectException e) {
             throw new ConnectException("No server found!");
         } catch (IOException e) {

@@ -79,6 +79,7 @@ public class Server { //TODO -> sort out exceptions
 //            out =  new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
             out = new BufferedOutputStream(socket.getOutputStream());
             in = new BufferedInputStream(socket.getInputStream());
+            System.out.println("Password send");
             out.write(SERVER_PASSWORD);
         }
 
