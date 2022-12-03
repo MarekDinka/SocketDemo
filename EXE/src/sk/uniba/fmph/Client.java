@@ -52,7 +52,7 @@ public class Client {
         int count = 0;
         for (; count < 4096; count++) {
             b = (byte) in.read();
-            if (b == END_OF_MESSAGE) {
+            if (b == END_OF_MESSAGE || b == -1) {
                 break;
             }
             buffer[count] = b;
@@ -68,7 +68,7 @@ public class Client {
         int count = 0;
         for (; count < 4096; count++) {
             b = (byte) in.read();
-            if (b == END_OF_MESSAGE) {
+            if (b == END_OF_MESSAGE || b == -1) {
                 break;
             }
             buffer[count] = b;
