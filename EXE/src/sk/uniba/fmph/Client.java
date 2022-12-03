@@ -65,6 +65,7 @@ public class Client {
         System.out.println("a");
         try {
             clientSocket = new Socket(ip, PORT);
+            clientSocket.setSoTimeout(10000);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
             password = readLine();
