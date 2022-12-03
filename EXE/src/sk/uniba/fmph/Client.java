@@ -34,6 +34,7 @@ public class Client {
             connectToServer(IP);
         } finally {
             SERVER_IP = IP;
+            System.out.println(IP);
         }
     }
 
@@ -41,6 +42,7 @@ public class Client {
         byte[] buffer = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int count;
+        System.out.println("about to read");
         while ((count = in.read(buffer)) > 0) {
             System.out.println("reading");
             out.write(buffer, 0, count);
@@ -60,11 +62,13 @@ public class Client {
 
     private void connectToServer(String ip) throws ConnectException {
         byte[] password = new byte[0];
+        System.out.println("a");
         try {
             clientSocket = new Socket(ip, PORT);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
             password = readLine();
+            System.out.println("b");
         } catch (ConnectException e) {
             throw new ConnectException("No server found!");
         } catch (IOException e) {
