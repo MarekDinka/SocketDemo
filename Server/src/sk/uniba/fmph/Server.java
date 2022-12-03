@@ -61,13 +61,14 @@ public class Server { //TODO -> sort out exceptions
         private final static byte[] INITIALIZE_FILE_TRANSFER_MESSAGE = {70, 73, 76, 69};
         private final static byte[] END_OF_SEGMENT_MESSAGE = {69, 78, 68};
         private final static byte[] CONTROLLER_RECOGNIZE_ME_MESSAGE = {67, 79, 78, 84, 82, 79, 76};
+        private final static byte END_OF_MESSAGE = 3;
         private final Socket socket;
         private final BufferedOutputStream out;
         private final BufferedInputStream in;
         /**
          * A 'password' server will send so client can recognize it, or try different port if wrong server is running on this one
          */
-        private final static byte[] SERVER_PASSWORD = new byte[]{1,2,3,4}; //open to suggestions
+        private final static byte[] SERVER_PASSWORD = new byte[]{'a', 'b', 'c', 'd'}; //open to suggestions
 
         /**
          * Constructor, receive socket, create in and out communication streams, send SERVER_PASSWORD to client
@@ -103,12 +104,21 @@ public class Server { //TODO -> sort out exceptions
 
         private void writeBytes(byte[] msg) throws IOException {
             out.write(msg);
+            out.write(END_OF_MESSAGE);
             out.flush();
         }
         private byte[] readLine() throws IOException {
             byte[] buffer = new byte[4096];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int count = in.read(buffer);
+            byte b = 0;
+            int count = 0;
+            for (; count < 4096; count++) {
+                b = (byte) in.read();
+                if (b == END_OF_MESSAGE) {
+                    break;
+                }
+                buffer[count] = b;
+            }
             out.write(buffer, 0, count);
             return out.toByteArray();
         }
@@ -116,7 +126,15 @@ public class Server { //TODO -> sort out exceptions
         private String readStringLine() throws IOException {
             byte[] buffer = new byte[4096];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int count = in.read(buffer);
+            byte b = 0;
+            int count = 0;
+            for (; count < 4096; count++) {
+                b = (byte) in.read();
+                if (b == END_OF_MESSAGE) {
+                    break;
+                }
+                buffer[count] = b;
+            }
             out.write(buffer, 0, count);
             return out.toString();
         }
