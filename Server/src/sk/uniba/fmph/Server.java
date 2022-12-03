@@ -62,7 +62,7 @@ public class Server { //TODO -> sort out exceptions
         private final static byte[] END_OF_SEGMENT_MESSAGE = {69, 78, 68};
         private final static byte[] CONTROLLER_RECOGNIZE_ME_MESSAGE = {67, 79, 78, 84, 82, 79, 76};
         private final Socket socket;
-        private final OutputStream out;
+        private final BufferedOutputStream out;
         private final BufferedInputStream in;
         /**
          * A 'password' server will send so client can recognize it, or try different port if wrong server is running on this one
@@ -77,7 +77,7 @@ public class Server { //TODO -> sort out exceptions
         public SocketHandler(Socket s) throws IOException {
             socket = s;
 //            out =  new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
-            out = socket.getOutputStream();
+            out = new BufferedOutputStream(socket.getOutputStream());
             in = new BufferedInputStream(socket.getInputStream());
             System.out.println("Password send");
             writeBytes(SERVER_PASSWORD);
@@ -108,20 +108,16 @@ public class Server { //TODO -> sort out exceptions
         private byte[] readLine() throws IOException {
             byte[] buffer = new byte[4096];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int count;
-            while ((count = in.read(buffer)) > 0) {
-                out.write(buffer, 0, count);
-            }
+            int count = in.read(buffer);
+            out.write(buffer, 0, count);
             return out.toByteArray();
         }
 
         private String readStringLine() throws IOException {
             byte[] buffer = new byte[4096];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int count;
-            while ((count = in.read(buffer)) > 0) {
-                out.write(buffer, 0, count);
-            }
+            int count = in.read(buffer);
+            out.write(buffer, 0, count);
             return out.toString();
         }
 

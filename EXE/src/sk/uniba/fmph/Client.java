@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class Client {
     private Socket clientSocket;
-    private OutputStream out;
+    private BufferedOutputStream out;
     private BufferedInputStream in;
     private final static int PORT = 4002;
     private final static byte[] SERVER_PASSWORD = {1,2,3,4};
@@ -46,23 +46,16 @@ public class Client {
     private byte[] readLine() throws IOException {
         byte[] buffer = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int count;
-        System.out.println("about to read");
-        while ((count = in.read(buffer)) > 0) {
-            System.out.println("reading");
-            out.write(buffer, 0, count);
-        }
-        System.out.println("done reading");
+        int count = in.read(buffer);
+        out.write(buffer, 0, count);
         return out.toByteArray();
     }
 
     private String readStringLine() throws IOException {
         byte[] buffer = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int count;
-        while ((count = in.read(buffer)) > 0) {
-            out.write(buffer, 0, count);
-        }
+        int count = in.read(buffer);
+        out.write(buffer, 0, count);
         return out.toString();
     }
 
@@ -72,7 +65,7 @@ public class Client {
         try {
             clientSocket = new Socket(ip, PORT);
             clientSocket.setSoTimeout(10000);
-            out = clientSocket.getOutputStream();
+            out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
             System.out.println("want to read password");
             password = readLine();
