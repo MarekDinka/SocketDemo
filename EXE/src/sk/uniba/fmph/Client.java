@@ -38,6 +38,11 @@ public class Client {
         }
     }
 
+    private void writeBytes(byte[] msg) throws IOException {
+        out.write(msg);
+        out.flush();
+    }
+
     private byte[] readLine() throws IOException {
         byte[] buffer = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -90,14 +95,14 @@ public class Client {
         }
         System.out.println("Printing exe message");
         try {
-            out.write(RECOGNIZE_EXE_MESSAGE);
+            writeBytes(RECOGNIZE_EXE_MESSAGE);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void sendMessage(byte[] msg, boolean stayConnected) throws IOException {
-        out.write(msg);
+        writeBytes(msg);
         System.out.println("Message delivered!");
         if (!stayConnected) {
             stopConnection();

@@ -67,7 +67,7 @@ public class Server { //TODO -> sort out exceptions
         /**
          * A 'password' server will send so client can recognize it, or try different port if wrong server is running on this one
          */
-        private final static byte[] SERVER_PASSWORD = {1,2,3,4}; //open to suggestions
+        private final static byte[] SERVER_PASSWORD = new byte[]{1,2,3,4}; //open to suggestions
 
         /**
          * Constructor, receive socket, create in and out communication streams, send SERVER_PASSWORD to client
@@ -80,7 +80,7 @@ public class Server { //TODO -> sort out exceptions
             out = new BufferedOutputStream(socket.getOutputStream());
             in = new BufferedInputStream(socket.getInputStream());
             System.out.println("Password send");
-            out.write(SERVER_PASSWORD);
+            writeBytes(SERVER_PASSWORD);
         }
 
         /**
@@ -101,6 +101,10 @@ public class Server { //TODO -> sort out exceptions
          *      Message from Controller informing us of its IP address for http communication
          */
 
+        private void writeBytes(byte[] msg) throws IOException {
+            out.write(msg);
+            out.flush();
+        }
         private byte[] readLine() throws IOException {
             byte[] buffer = new byte[4096];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -153,7 +157,7 @@ public class Server { //TODO -> sort out exceptions
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.err.println("Unrecognized message = " + new String(message));
+            System.err.println("Unrecognized message = " + Arrays.toString(message));
 //            Path path = Paths.get(message);
 //            if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
 //                stopSocket();
