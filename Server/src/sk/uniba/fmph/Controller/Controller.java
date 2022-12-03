@@ -1,11 +1,11 @@
-package sk.uniba.fmph.Arduino;
+package sk.uniba.fmph.Controller;
 
 import java.net.InetAddress;
 
-public class Arduino {
+public class Controller {
     public final InetAddress IP;
 
-    public Arduino(InetAddress ip) {
+    public Controller(InetAddress ip) {
         IP = ip;
     }
 
