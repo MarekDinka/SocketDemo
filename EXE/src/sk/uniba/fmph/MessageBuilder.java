@@ -16,7 +16,7 @@ public class MessageBuilder {
             }
 
             public static boolean equals(byte[] msg) {
-                return Arrays.equals(msg, new byte[]{EXE.ID, FileTransfer.ID, END_OF_MESSAGE});
+                return Arrays.equals(msg, new byte[]{EXE.ID, FileTransfer.ID});
             }
         }
 
@@ -28,7 +28,7 @@ public class MessageBuilder {
             }
 
             public static boolean equals(byte[] msg) {
-                return Arrays.equals(msg, new byte[]{EXE.ID, ID, END_OF_MESSAGE});
+                return Arrays.equals(msg, new byte[]{EXE.ID, ID});
             }
         }
     }
@@ -39,8 +39,20 @@ public class MessageBuilder {
             return new byte[]{ID};
         }
 
+        public static class Exception {
+            private static final byte ID = 33;
+
+            public static byte[] build() {
+                return new byte[]{GUI.ID, ID};
+            }
+
+            public static boolean equals(byte[] msg) {
+                return Arrays.equals(msg, new byte[]{GUI.ID, ID});
+            }
+        }
+
         public static boolean equals(byte[] msg) {
-            return Arrays.equals(msg, new byte[]{ID, END_OF_MESSAGE});
+            return Arrays.equals(msg, new byte[]{ID});
         }
     }
 
@@ -51,18 +63,7 @@ public class MessageBuilder {
         }
 
         public static boolean equals(byte[] msg) {
-            return Arrays.equals(msg, new byte[]{ID, END_OF_MESSAGE});
-        }
-    }
-
-    public static class Exception {
-        private static final byte ID = 36;
-        public static byte[] build() {
-            return new byte[]{ID};
-        }
-
-        public static boolean equals(byte[] msg) {
-            return Arrays.equals(msg, new byte[]{ID, END_OF_MESSAGE});
+            return Arrays.equals(msg, new byte[]{ID});
         }
     }
 }
