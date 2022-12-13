@@ -17,14 +17,23 @@ public class Client {
     private final static byte[] RECOGNIZE_EXE_MESSAGE = {69, 88, 69};
     private final static byte[] INITIALIZE_FILE_TRANSFER_MESSAGE = {70, 73, 76, 69};
     private final static byte[] END_OF_SEGMENT_MESSAGE = {69, 78, 68};
-    private final static byte END_OF_MESSAGE = 3;
+    private final static byte END_OF_MESSAGE = 4;
     private final String SERVER_IP;
 
+    /**
+     * Connect to server using differentIp
+     * @param differentIp server ip
+     * @throws ConnectException if connecting goes wrong
+     */
     public Client(String differentIp) throws ConnectException { //TODO -> check if differentIp is an IP
         SERVER_IP = differentIp;
         connectToServer(SERVER_IP);
     }
 
+    /**
+     * Use UDP to find server ip
+     * @throws ConnectException if connecting goes wrong
+     */
     public Client() throws ConnectException {
         String IP = "";
         try {
@@ -35,7 +44,6 @@ public class Client {
             connectToServer(IP);
         } finally {
             SERVER_IP = IP;
-            System.out.println(IP);
         }
     }
 
@@ -45,6 +53,11 @@ public class Client {
         out.flush();
     }
 
+    /**
+     * read message from server that ends with END_OF_MESSAGE
+     * @return message from server in form of byte[]
+     * @throws IOException TODO
+     */
     private byte[] readLine() throws IOException {
         byte[] buffer = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -61,6 +74,11 @@ public class Client {
         return out.toByteArray();
     }
 
+    /**
+     * read message from server and convert it to string
+     * @return message from server in string form
+     * @throws IOException TODO
+     */
     private String readStringLine() throws IOException {
         byte[] buffer = new byte[4096];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -85,9 +103,7 @@ public class Client {
             clientSocket.setSoTimeout(10000);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
-            System.out.println("want to read password");
             password = readLine();
-            System.out.println("b");
 
         } catch (ConnectException e) {
             throw new ConnectException("No server found!");
@@ -104,14 +120,19 @@ public class Client {
             }
             throw new ConnectException("No server found!");
         }
-        System.out.println("Printing exe message");
-        try {
-            writeBytes(RECOGNIZE_EXE_MESSAGE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            writeBytes(RECOGNIZE_EXE_MESSAGE);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
+    /**
+     * Send message to server
+     * @param msg message to be sent
+     * @param stayConnected if true, socket will remain connected to server
+     * @throws IOException TODO
+     */
     public void sendMessage(byte[] msg, boolean stayConnected) throws IOException {
         writeBytes(msg);
         System.out.println("Message delivered!");
@@ -119,18 +140,19 @@ public class Client {
             stopConnection();
         }
     }
-    public void sendMessage(byte[] msg) throws IOException {sendMessage(msg, false);}
-    public void sendMessage(String msg) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), false);}
+    public void sendMessage(byte[] msg) throws IOException {sendMessage(msg, true);}
+    public void sendMessage(String msg) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), true);}
     public void sendMessage(String msg, boolean stayConnected) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), stayConnected);}
 
     public void performInit(String pathToXmlThatIsToBeSent) throws IOException {
-        sendMessage(INITIALIZE_FILE_TRANSFER_MESSAGE, true);
+//        sendMessage(INITIALIZE_FILE_TRANSFER_MESSAGE, true);
+        sendMessage(MessageBuilder.EXE.FileTransfer.build());
         if (!Files.exists(Paths.get(pathToXmlThatIsToBeSent), LinkOption.NOFOLLOW_LINKS)) {
             System.err.println("No file found!");
             return;
         }
         File file = new File(pathToXmlThatIsToBeSent);
-        sendMessage(file.getName(), true);
+        sendMessage(file.getName());
         byte[] buffer = new byte[4096];
         BufferedInputStream input = new BufferedInputStream(Files.newInputStream(file.toPath()));
         BufferedOutputStream output = new BufferedOutputStream(clientSocket.getOutputStream());
@@ -149,9 +171,9 @@ public class Client {
     }
 
     public void performEndOfSegment(String nameOfBlock, String pathToXml) throws IOException {
-        sendMessage(END_OF_SEGMENT_MESSAGE, true);
-        sendMessage(nameOfBlock, true);
-        sendMessage(pathToXml);
+        sendMessage(MessageBuilder.EXE.EndOfSegment.build());
+        sendMessage(nameOfBlock);
+        sendMessage(pathToXml, false);
     }
 
     public void stopConnection() throws IOException {
