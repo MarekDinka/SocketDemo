@@ -8,6 +8,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -101,9 +102,10 @@ public class SocketHandler extends Thread { //TODO -> communicate in bytes
         return out.toString();
     }
 
-    public void sendException(byte[] exception) {
+    public void sendException(String className, byte[] exception) {
         try {
-            writeBytes(MessageBuilder.GUI.Exception.build());
+//            writeBytes(MessageBuilder.GUI.Exception.build());
+            writeBytes(className.getBytes(StandardCharsets.UTF_8));
             writeBytes(exception);
         } catch (IOException e) {
             e.printStackTrace();
@@ -111,7 +113,7 @@ public class SocketHandler extends Thread { //TODO -> communicate in bytes
     }
 
     @Override
-    public void run() { // TODO -> remove commented stuff
+    public void run() {
         byte[] message = new byte[0];
         try {
             message = readLine();
@@ -153,5 +155,11 @@ public class SocketHandler extends Thread { //TODO -> communicate in bytes
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+//        try {
+//            int a = 2/0;
+//        } catch (Exception e) {
+//            Server.getInstance().sendExceptionToAllActiveGUIs(e);
+//        }
     }
 }

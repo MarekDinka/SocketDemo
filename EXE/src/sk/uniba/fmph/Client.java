@@ -14,9 +14,6 @@ public class Client {
     private BufferedInputStream in;
     private final static int PORT = 4002;
     private final static byte[] SERVER_PASSWORD = new byte[]{'a', 'b', 'c', 'd'};
-    private final static byte[] RECOGNIZE_EXE_MESSAGE = {69, 88, 69};
-    private final static byte[] INITIALIZE_FILE_TRANSFER_MESSAGE = {70, 73, 76, 69};
-    private final static byte[] END_OF_SEGMENT_MESSAGE = {69, 78, 68};
     private final static byte END_OF_MESSAGE = 4;
     private final String SERVER_IP;
 

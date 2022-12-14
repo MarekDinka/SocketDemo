@@ -3,13 +3,14 @@ package sk.uniba.fmph;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-public class Client {
+public class Client extends Thread {
     private Socket clientSocket;
     private BufferedOutputStream out;
     private BufferedInputStream in;
@@ -84,6 +85,7 @@ public class Client {
         int count = 0;
         for (; count < 4096; count++) {
             b = (byte) in.read();
+//            System.out.println(b);
             if (b == END_OF_MESSAGE || b == -1) {
                 break;
             }
@@ -145,5 +147,35 @@ public class Client {
         in.close();
         out.close();
         clientSocket.close();
+    }
+
+    /**
+     * Await exceptions and resolve them
+     */
+    @Override
+    public void run() {
+        try {
+            clientSocket.setSoTimeout(0);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        while (clientSocket.isConnected()) {
+            try {
+                String className = readStringLine();
+                Class<? extends Exception> c = (Class<? extends Exception>) Class.forName(className);
+                Exception e = c.getConstructor().newInstance();
+//                System.out.println(className);
+                byte[] stackTrace = readLine();
+//                System.out.println(Arrays.toString(stackTrace));
+                try (ByteArrayInputStream bin = new ByteArrayInputStream(stackTrace); ObjectInput in = new ObjectInputStream(bin)) {
+                    e.setStackTrace((StackTraceElement[]) in.readObject());
+                    throw e;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
