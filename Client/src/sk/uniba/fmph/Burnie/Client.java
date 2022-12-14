@@ -1,13 +1,10 @@
-package sk.uniba.fmph;
+package sk.uniba.fmph.Burnie;
 
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class Client extends Thread {

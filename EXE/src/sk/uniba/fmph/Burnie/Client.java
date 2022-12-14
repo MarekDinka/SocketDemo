@@ -1,4 +1,4 @@
-package sk.uniba.fmph;
+package sk.uniba.fmph.Burnie;
 
 import java.io.*;
 import java.net.*;

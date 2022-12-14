@@ -1,6 +1,6 @@
-package sk.uniba.fmph.Controller;
+package sk.uniba.fmph.Burnie.Controller;
 
-import sk.uniba.fmph.UDPCommunicationHandler;
+import sk.uniba.fmph.Burnie.UDPCommunicationHandler;
 
 import java.util.*;
 
