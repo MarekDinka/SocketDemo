@@ -1,4 +1,4 @@
-package sk.uniba.fmph.TCP;
+package sk.uniba.fmph.Burnie;
 
 import java.nio.ByteBuffer;
 

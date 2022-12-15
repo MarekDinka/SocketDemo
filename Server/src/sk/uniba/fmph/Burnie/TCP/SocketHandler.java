@@ -1,13 +1,14 @@
-package sk.uniba.fmph.TCP;
+package sk.uniba.fmph.Burnie.TCP;
 
-import sk.uniba.fmph.xml.FileReceiver;
-import sk.uniba.fmph.Server;
+import sk.uniba.fmph.Burnie.Server;
+import sk.uniba.fmph.Burnie.xml.FileReceiver;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ public class SocketHandler extends Thread {
         out = new BufferedOutputStream(socket.getOutputStream());
         in = new BufferedInputStream(socket.getInputStream());
         System.out.println("Password send");
-        writeBytes(SERVER_PASSWORD);
+        writeMessage(new Message(SERVER_PASSWORD));
     }
 
     /**
@@ -64,58 +65,43 @@ public class SocketHandler extends Thread {
 
     private void writeMessage(Message msg) throws IOException {
         out.write(msg.getMessage());
-//        out.write(END_OF_MESSAGE);
         out.flush();
-//        System.out.println("Message done");
     }
+
     private byte[] readLine() throws IOException {
         byte[] msgLength = new byte[4];
         for (int i = 0; i < 4; i++) {
             msgLength[i] = (byte) in.read();
         }
-        ByteBuffer wrapped = ByteBuffer.wrap(msgLength);
-        byte[] res = new byte[wrapped.getInt()];
-        int err = in.read(res);
-        if (err != wrapped.getInt()) {
-            //throw
+        int len = ByteBuffer.wrap(msgLength).getInt();
+        byte[] res = new byte[len];
+        int count = in.read(res);
+        if (count != len) {
+            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
         }
         return res;
-
-//        for (; count < 4096; count++) {
-//            b = (byte) in.read();
-//            if (b == END_OF_MESSAGE || b == -1) {
-//                break;
-//            }
-//            buffer[count] = b;
-//        }
-//        out.write(buffer, 0, count);
-//        return out.toByteArray();
     }
 
     private String readStringLine() throws IOException {
-        byte[] buffer = new byte[4096];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte b = 0;
-        int count = 0;
-        for (; count < 4096; count++) {
-            b = (byte) in.read();
-            if (b == END_OF_MESSAGE || b == -1) {
-                break;
-            }
-            buffer[count] = b;
+        byte[] msgLength = new byte[4];
+        for (int i = 0; i < 4; i++) {
+            msgLength[i] = (byte) in.read();
         }
-        out.write(buffer, 0, count);
+        int len = ByteBuffer.wrap(msgLength).getInt();
+        byte[] res = new byte[len];
+        int count = in.read(res);
+        if (count != len) {
+            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write(res);
         return out.toString();
     }
 
     public void sendException(String className, byte[] exception) {
         try {
-//            writeBytes(MessageBuilder.GUI.Exception.build());
             writeMessage(new Message(className.getBytes(StandardCharsets.UTF_8)));
             writeMessage(new Message(exception));
-//            writeBytes(className.getBytes(StandardCharsets.UTF_8));
-//            writeBytes(exception);
-//            System.out.println(Arrays.toString(exception));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -145,22 +131,6 @@ public class SocketHandler extends Thread {
             } else {
                 System.err.println("Unrecognized message = " + Arrays.toString(message));
             }
-//            if (Arrays.equals(RECOGNIZE_EXE_MESSAGE, message)) {
-//                message = readLine();
-//                if (Arrays.equals(END_OF_SEGMENT_MESSAGE, message)) {
-//                    String segmentName = readStringLine(), id = readStringLine();
-//                    System.out.println("Segment named " + segmentName + " ended, id = " + id);
-//                } else if (Arrays.equals(INITIALIZE_FILE_TRANSFER_MESSAGE, message)) {
-//                    FileReceiver.acceptFile(in, readStringLine());
-//                } else {
-//                    System.out.println("Wrong message received, disconnecting");
-//                }
-//                stopSocket();
-//                return;
-//            }
-//            if (Arrays.equals(CONTROLLER_RECOGNIZE_ME_MESSAGE, message)) {
-//                System.out.println("Found controller");
-//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
