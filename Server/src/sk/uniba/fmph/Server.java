@@ -83,6 +83,7 @@ public class Server {
                     toRemove.add(gui);
                     continue;
                 }
+//                System.out.println(c);
                 gui.sendException(c, exception);
             }
             for (SocketHandler gui : toRemove) {

@@ -8,18 +8,15 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
  *  a Communication thread created for each client -> allows client->server and server->client communication
  */
-public class SocketHandler extends Thread { //TODO -> communicate in bytes
-//    private final static byte[] RECOGNIZE_EXE_MESSAGE = {69, 88, 69};
-//    private final static byte[] INITIALIZE_FILE_TRANSFER_MESSAGE = {70, 73, 76, 69};
-//    private final static byte[] END_OF_SEGMENT_MESSAGE = {69, 78, 68};
-//    private final static byte[] CONTROLLER_RECOGNIZE_ME_MESSAGE = {67, 79, 78, 84, 82, 79, 76};
-    private final static byte END_OF_MESSAGE = 4;
+public class SocketHandler extends Thread {
+//    private final static byte END_OF_MESSAGE = 4;
     private final Socket socket;
     private final BufferedOutputStream out;
     private final BufferedInputStream in;
@@ -65,25 +62,34 @@ public class SocketHandler extends Thread { //TODO -> communicate in bytes
      *      Message from Controller informing us of its IP address for http communication
      */
 
-    private void writeBytes(byte[] msg) throws IOException {
-        out.write(msg);
-        out.write(END_OF_MESSAGE);
+    private void writeMessage(Message msg) throws IOException {
+        out.write(msg.getMessage());
+//        out.write(END_OF_MESSAGE);
         out.flush();
+//        System.out.println("Message done");
     }
     private byte[] readLine() throws IOException {
-        byte[] buffer = new byte[4096];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte b = 0;
-        int count = 0;
-        for (; count < 4096; count++) {
-            b = (byte) in.read();
-            if (b == END_OF_MESSAGE || b == -1) {
-                break;
-            }
-            buffer[count] = b;
+        byte[] msgLength = new byte[4];
+        for (int i = 0; i < 4; i++) {
+            msgLength[i] = (byte) in.read();
         }
-        out.write(buffer, 0, count);
-        return out.toByteArray();
+        ByteBuffer wrapped = ByteBuffer.wrap(msgLength);
+        byte[] res = new byte[wrapped.getInt()];
+        int err = in.read(res);
+        if (err != wrapped.getInt()) {
+            //throw
+        }
+        return res;
+
+//        for (; count < 4096; count++) {
+//            b = (byte) in.read();
+//            if (b == END_OF_MESSAGE || b == -1) {
+//                break;
+//            }
+//            buffer[count] = b;
+//        }
+//        out.write(buffer, 0, count);
+//        return out.toByteArray();
     }
 
     private String readStringLine() throws IOException {
@@ -105,8 +111,11 @@ public class SocketHandler extends Thread { //TODO -> communicate in bytes
     public void sendException(String className, byte[] exception) {
         try {
 //            writeBytes(MessageBuilder.GUI.Exception.build());
-            writeBytes(className.getBytes(StandardCharsets.UTF_8));
-            writeBytes(exception);
+            writeMessage(new Message(className.getBytes(StandardCharsets.UTF_8)));
+            writeMessage(new Message(exception));
+//            writeBytes(className.getBytes(StandardCharsets.UTF_8));
+//            writeBytes(exception);
+//            System.out.println(Arrays.toString(exception));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -156,10 +165,10 @@ public class SocketHandler extends Thread { //TODO -> communicate in bytes
             e.printStackTrace();
         }
 
-//        try {
-//            int a = 2/0;
-//        } catch (Exception e) {
-//            Server.getInstance().sendExceptionToAllActiveGUIs(e);
-//        }
+        try {
+            int a = 2/0;
+        } catch (Exception e) {
+            Server.getInstance().sendExceptionToAllActiveGUIs(e);
+        }
     }
 }

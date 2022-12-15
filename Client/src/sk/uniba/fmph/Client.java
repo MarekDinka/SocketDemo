@@ -161,11 +161,17 @@ public class Client extends Thread {
                 String className = readStringLine();
                 Class<? extends Exception> c = (Class<? extends Exception>) Class.forName(className);
                 Exception e = c.getConstructor().newInstance();
-//                System.out.println(className);
+//                System.out.println(c.toString());
                 byte[] stackTrace = readLine();
+                System.out.println(Arrays.toString(stackTrace));
 //                System.out.println(Arrays.toString(stackTrace));
                 try (ByteArrayInputStream bin = new ByteArrayInputStream(stackTrace); ObjectInput in = new ObjectInputStream(bin)) {
+//                    System.out.println("bbbbbbbbbbbbbbbb");
+//                    Object a = in.readObject();
+//                    System.out.println("aaaaaaaaaaaaaaa");
+//                    StackTraceElement[] a = (StackTraceElement[]) in.readObject();
                     e.setStackTrace((StackTraceElement[]) in.readObject());
+//                    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                     throw e;
                 } catch (Exception ex) {
                     ex.printStackTrace();

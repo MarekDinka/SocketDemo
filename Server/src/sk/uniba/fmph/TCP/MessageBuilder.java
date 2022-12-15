@@ -3,7 +3,6 @@ package sk.uniba.fmph.TCP;
 import java.util.Arrays;
 
 public class MessageBuilder {
-    private static final byte END_OF_MESSAGE = 4;
 
     public static class EXE {
         private static final byte ID = 'a';
