@@ -1,6 +1,6 @@
-package sk.uniba.fmph.Burnie;
+package sk.uniba.fmph;
 
-import sk.uniba.fmph.Burnie.TCP.SocketHandler;
+import sk.uniba.fmph.TCP.SocketHandler;
 
 import java.io.*;
 import java.net.ServerSocket;

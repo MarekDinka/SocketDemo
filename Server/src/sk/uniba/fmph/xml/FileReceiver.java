@@ -1,4 +1,4 @@
-package sk.uniba.fmph.Burnie.xml;
+package sk.uniba.fmph.xml;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

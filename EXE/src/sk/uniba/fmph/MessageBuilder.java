@@ -1,4 +1,4 @@
-package sk.uniba.fmph.Burnie;
+package sk.uniba.fmph;
 
 import java.util.Arrays;
 

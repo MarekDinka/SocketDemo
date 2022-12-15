@@ -1,4 +1,4 @@
-package sk.uniba.fmph.Burnie.TCP;
+package sk.uniba.fmph.TCP;
 
 import java.util.Arrays;
 

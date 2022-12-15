@@ -1,4 +1,4 @@
-package sk.uniba.fmph.Burnie.Controller;
+package sk.uniba.fmph.Controller;
 
 import java.net.InetAddress;
 

@@ -1,7 +1,7 @@
-package sk.uniba.fmph.Burnie.TCP;
+package sk.uniba.fmph.TCP;
 
-import sk.uniba.fmph.Burnie.xml.FileReceiver;
-import sk.uniba.fmph.Burnie.Server;
+import sk.uniba.fmph.xml.FileReceiver;
+import sk.uniba.fmph.Server;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
