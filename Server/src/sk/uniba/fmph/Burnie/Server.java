@@ -1,5 +1,8 @@
 package sk.uniba.fmph.Burnie;
 
+import sk.uniba.fmph.Burnie.Controller.Controller;
+import sk.uniba.fmph.Burnie.TCP.ControllerHandler;
+import sk.uniba.fmph.Burnie.TCP.GUIHandler;
 import sk.uniba.fmph.Burnie.TCP.SocketHandler;
 
 import java.io.*;
@@ -17,7 +20,8 @@ public class Server {
     private ServerSocket serverSocket;
     public final static int PORT = 4002;
 
-    private final List<SocketHandler> activeGUIs = new LinkedList<>();
+    private final List<GUIHandler> activeGUIs = new LinkedList<>();
+    private final List<ControllerHandler> controllers = new LinkedList<>();
 
     /**
      * Constructor, find port and initialize TCP socket
@@ -27,6 +31,8 @@ public class Server {
             serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println("Server start failed!");
+            return;
         }
         UDPCommunicationHandler.getInstance().start();
         System.out.println("Connection established!");
@@ -38,9 +44,10 @@ public class Server {
     public void begin() {
         while (!serverSocket.isClosed()) {
             try {
-                new SocketHandler(serverSocket.accept()).start();
+                new SocketHandler(serverSocket.accept());
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Accepting new connection unsuccessful");
+                sendExceptionToAllActiveGUIs(e);
             }
         }
     }
@@ -49,7 +56,7 @@ public class Server {
      * new GUI has connected to server
      * @param sh GUI
      */
-    public void addGUI(SocketHandler sh) {
+    public void addGUI(GUIHandler sh) {
         synchronized (activeGUIs) {
             activeGUIs.add(sh);
         }
@@ -59,11 +66,33 @@ public class Server {
      * A GUI has disconnected from server
      * @param sh GUI
      */
-    public void removeGUI(SocketHandler sh) {
+    public void removeGUI(GUIHandler sh) {
         synchronized (activeGUIs) {
             activeGUIs.remove(sh);
         }
     }
+
+    /**
+     * Add a newly connected controller to list of controllers
+     * @param ch handler for said controller
+     */
+    public void addController(ControllerHandler ch) {
+        synchronized (controllers) {
+            controllers.add(ch);
+        }
+    }
+
+    /**
+     * Remove a controller that suddenly disconnected from server
+     * @param ch handler for said controller
+     */
+    public void removeController(ControllerHandler ch) {
+        synchronized (controllers) {
+            controllers.remove(ch);
+        }
+    }
+
+    public List<ControllerHandler> getControllers() {return controllers;}
 
     /**
      * An exception has arrisen in server or other parts, and we will attempt to send it to any active GUI
@@ -75,18 +104,16 @@ public class Server {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oo = new ObjectOutputStream(baos);
             oo.writeObject(th.getStackTrace());
-//            th.printStackTrace(new PrintStream(oo));
             byte[] exception = baos.toByteArray();
-            List<SocketHandler> toRemove = new LinkedList<>();
-            for (SocketHandler gui : activeGUIs) {
-                if (!gui.isActive()) {
+            List<GUIHandler> toRemove = new LinkedList<>();
+            for (GUIHandler gui : activeGUIs) {
+                if (!gui.getSocket().isActive()) {
                     toRemove.add(gui);
                     continue;
                 }
-//                System.out.println(c);
                 gui.sendException(c, exception);
             }
-            for (SocketHandler gui : toRemove) {
+            for (GUIHandler gui : toRemove) {
                 removeGUI(gui);
             }
         } catch (IOException e) {

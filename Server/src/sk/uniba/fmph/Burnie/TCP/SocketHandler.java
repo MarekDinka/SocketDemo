@@ -1,6 +1,5 @@
 package sk.uniba.fmph.Burnie.TCP;
 
-import sk.uniba.fmph.Burnie.Server;
 import sk.uniba.fmph.Burnie.xml.FileReceiver;
 
 import java.io.BufferedInputStream;
@@ -10,14 +9,11 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  *  a Communication thread created for each client -> allows client->server and server->client communication
  */
-public class SocketHandler extends Thread {
-//    private final static byte END_OF_MESSAGE = 4;
+public class SocketHandler {
     private final Socket socket;
     private final BufferedOutputStream out;
     private final BufferedInputStream in;
@@ -33,45 +29,51 @@ public class SocketHandler extends Thread {
      */
     public SocketHandler(Socket s) throws IOException {
         socket = s;
-//            out =  new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
         out = new BufferedOutputStream(socket.getOutputStream());
         in = new BufferedInputStream(socket.getInputStream());
-        System.out.println("Password send");
         writeMessage(new Message(SERVER_PASSWORD));
+        byte type = readTypeOfSocket();
+        if (MessageBuilder.GUI.is(type)) {
+            new GUIHandler(this).start();
+        } else if (MessageBuilder.EXE.is(type)) {
+            new EXEHandler(this).start();
+        } else if (MessageBuilder.Controller.is(type)) {
+            new ControllerHandler(this, s.getInetAddress()).start();
+        }
     }
 
     /**
      * Stop this socket
      * @throws IOException when something goes wrong
      */
-    public void stopSocket() throws IOException {
-        Server.getInstance().removeGUI(this);
-        socket.close();
-        out.close();
-        in.close();
+    public void stopSocket() {
+        try {
+            socket.close();
+            out.close();
+            in.close();
+        } catch (IOException ignored) {}
     }
 
     public boolean isActive() {
-        return socket.isConnected();
+        return socket.isConnected() && !socket.isClosed();
     }
 
-    /**
-     * close connection if client does not respond with accepted message, if he does, handle the message
-     * accepted messages:
-     *      INITIALIZE_FILE_TRANSFER_MESSAGE -> xml file will shortly be sent from client
-     *      END_OF_SEGMENT_MESSAGE -> EXE is informing us that segment has come to an end
-     *      Message from Controller informing us of its IP address for http communication
-     */
-
-    private void writeMessage(Message msg) throws IOException {
+    public void writeMessage(Message msg) throws IOException {
         out.write(msg.getMessage());
         out.flush();
     }
 
-    private byte[] readLine() throws IOException {
+    public byte readTypeOfSocket() throws IOException {
+        return (byte)in.read();
+    }
+
+    public byte[] readMessage() throws IOException {
         byte[] msgLength = new byte[4];
         for (int i = 0; i < 4; i++) {
             msgLength[i] = (byte) in.read();
+            if (msgLength[i] == -1) {
+                throw new SocketException("Stream has been closed");
+            }
         }
         int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
@@ -82,7 +84,26 @@ public class SocketHandler extends Thread {
         return res;
     }
 
-    private String readStringLine() throws IOException {
+    /**
+     * read special(it has a fixed length) message from controller
+     * @param ignored readMessage() overload
+     * @return byte[] -> message from controller
+     * @throws IOException TODO
+     */
+    public byte[] readMessage(boolean ignored) throws IOException {
+        final int MESSAGE_LENGTH = 16;
+        byte[] res = new byte[MESSAGE_LENGTH];
+        int count = in.read(res);
+        if (count == -1) {
+            throw new SocketException("Stream has been closed");
+        }
+        if (count != MESSAGE_LENGTH) {
+            throw new SocketException("Bad packet received, expected length " + MESSAGE_LENGTH + "got " + count);
+        }
+        return res;
+    }
+
+    public String readStringMessage() throws IOException {
         byte[] msgLength = new byte[4];
         for (int i = 0; i < 4; i++) {
             msgLength[i] = (byte) in.read();
@@ -90,6 +111,9 @@ public class SocketHandler extends Thread {
         int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
         int count = in.read(res);
+        if (count == -1) {
+            throw new SocketException("Stream has been closed");
+        }
         if (count != len) {
             throw new SocketException("Bad packet received, expected length " + len + "got " + count);
         }
@@ -98,47 +122,7 @@ public class SocketHandler extends Thread {
         return out.toString();
     }
 
-    public void sendException(String className, byte[] exception) {
-        try {
-            writeMessage(new Message(className.getBytes(StandardCharsets.UTF_8)));
-            writeMessage(new Message(exception));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void run() {
-        byte[] message = new byte[0];
-        try {
-            message = readLine();
-        } catch (IOException e) {
-            System.err.println("Client did not respond, disconnecting client");
-        }
-        try {
-            if (MessageBuilder.EXE.FileTransfer.equals(message)) {
-                FileReceiver.acceptFile(in, readStringLine());
-                stopSocket();
-            } else if (MessageBuilder.EXE.EndOfSegment.equals(message)) {
-                String segmentName = readStringLine(), id = readStringLine();
-                System.out.println("Segment named " + segmentName + " ended, id = " + id);
-                stopSocket();
-            } else if (MessageBuilder.GUI.equals(message)) {
-                Server.getInstance().addGUI(this);
-                System.out.println("GUI connected!");
-            } else if (MessageBuilder.Controller.equals(message)) {
-                System.out.println("Controller connected!");
-            } else {
-                System.err.println("Unrecognized message = " + Arrays.toString(message));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            int a = 2/0;
-        } catch (Exception e) {
-            Server.getInstance().sendExceptionToAllActiveGUIs(e);
-        }
+    public void receiveAFile() throws IOException {
+        FileReceiver.acceptFile(in, readStringMessage());
     }
 }

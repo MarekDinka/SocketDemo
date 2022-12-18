@@ -15,7 +15,6 @@ public class Client {
     private BufferedInputStream in;
     private final static int PORT = 4002;
     private final static byte[] SERVER_PASSWORD = new byte[]{'a', 'b', 'c', 'd'};
-//    private final static byte END_OF_MESSAGE = 4;
     private final String SERVER_IP;
 
     /**
@@ -92,7 +91,6 @@ public class Client {
 
     private void connectToServer(String ip) throws ConnectException {
         byte[] password = new byte[0];
-        System.out.println("a");
         try {
             clientSocket = new Socket(ip, PORT);
             clientSocket.setSoTimeout(10000);
@@ -115,6 +113,7 @@ public class Client {
             }
             throw new ConnectException("No server found!");
         }
+        sendTypeOfSocketMessage();
     }
 
     /**
@@ -133,9 +132,16 @@ public class Client {
     public void sendMessage(byte[] msg) throws IOException {sendMessage(msg, true);}
     public void sendMessage(String msg) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), true);}
     public void sendMessage(String msg, boolean stayConnected) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), stayConnected);}
+    public void sendTypeOfSocketMessage() {
+        try {
+            out.write(MessageBuilder.EXE.build());
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void performInit(String pathToXmlThatIsToBeSent) throws IOException {
-//        sendMessage(INITIALIZE_FILE_TRANSFER_MESSAGE, true);
         sendMessage(MessageBuilder.EXE.FileTransfer.build());
         if (!Files.exists(Paths.get(pathToXmlThatIsToBeSent), LinkOption.NOFOLLOW_LINKS)) {
             System.err.println("No file found!");
@@ -148,12 +154,12 @@ public class Client {
         BufferedOutputStream output = new BufferedOutputStream(clientSocket.getOutputStream());
 
         int count;
-        System.out.println("getting ready to transfer");
+//        System.out.println("getting ready to transfer");
         while ((count = input.read(buffer)) > 0) {
             output.write(buffer, 0, count);
-            System.out.println("transferring");
+//            System.out.println("transferring");
         }
-        System.out.println("Done");
+//        System.out.println("Done");
 
         input.close();
         output.close();

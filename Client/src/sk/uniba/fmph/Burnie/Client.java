@@ -1,6 +1,7 @@
 package sk.uniba.fmph.Burnie;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -22,7 +23,7 @@ public class Client extends Thread {
      * @param differentIp server ip
      * @throws ConnectException if connecting goes wrong
      */
-    public Client(String differentIp) throws ConnectException { //TODO -> check if differentIp is an IP
+    public Client(String differentIp) throws IOException { //TODO -> check if differentIp is an IP
         SERVER_IP = differentIp;
         connectToServer(SERVER_IP);
     }
@@ -31,7 +32,7 @@ public class Client extends Thread {
      * Use UDP to find server ip
      * @throws ConnectException if connecting goes wrong
      */
-    public Client() throws ConnectException {
+    public Client() throws IOException {
         String IP = "";
         try {
             connectToServer("127.0.0.1"); // we need to try localhost first because 2 different applications(server and this) cannot be listening for UPD on one ip at the same time
@@ -42,9 +43,15 @@ public class Client extends Thread {
         } finally {
             SERVER_IP = IP;
         }
+        System.out.println("Connected!");
+//        try {
+//            sendMessage(MessageBuilder.GUI.Request.NumberOfProjects.build());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
-    private void writeMessage(Message msg) throws IOException {
+    public void writeMessage(Message msg) throws IOException {
         out.write(msg.getMessage());
         out.flush();
     }
@@ -54,10 +61,13 @@ public class Client extends Thread {
      * @return message from server in form of byte[]
      * @throws IOException TODO
      */
-    private byte[] readLine() throws IOException {
+    byte[] readMessage() throws IOException {
         byte[] msgLength = new byte[4];
         for (int i = 0; i < 4; i++) {
             msgLength[i] = (byte) in.read();
+            if (msgLength[i] == -1) {
+                throw new SocketException("Stream has been closed");
+            }
         }
         int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
@@ -73,10 +83,13 @@ public class Client extends Thread {
      * @return message from server in string form
      * @throws IOException TODO
      */
-    private String readStringLine() throws IOException {
+    private String readStringMessage() throws IOException {
         byte[] msgLength = new byte[4];
         for (int i = 0; i < 4; i++) {
             msgLength[i] = (byte) in.read();
+            if (msgLength[i] == -1) {
+                throw new SocketException("Stream has been closed");
+            }
         }
         int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
@@ -89,58 +102,45 @@ public class Client extends Thread {
         return out.toString();
     }
 
-    private void connectToServer(String ip) throws ConnectException {
+    private void connectToServer(String ip) throws IOException {
         byte[] password = new byte[0];
         try {
             clientSocket = new Socket(ip, PORT);
             clientSocket.setSoTimeout(10000);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
-            password = readLine();
+            password = readMessage();
         } catch (ConnectException e) {
             throw new ConnectException("No server found!");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         if (!Arrays.equals(SERVER_PASSWORD, password)) {
-            try {
-                clientSocket.close();
-                out.close();
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            clientSocket.close();
+            out.close();
+            in.close();
             throw new ConnectException("No server found!");
         }
 
-        try {
-            sendMessage(MessageBuilder.GUI.build());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        sendTypeOfSocketMessage();
     }
 
-    /**
-     * Send message to server
-     * @param msg message to be sent
-     * @param stayConnected if true, socket will remain connected to server
-     * @throws IOException TODO
-     */
-    public void sendMessage(byte[] msg, boolean stayConnected) throws IOException {
-        writeMessage(new Message(msg));
-        System.out.println("Message delivered!");
-        if (!stayConnected) {
-            stopConnection();
-        }
+    private void sendTypeOfSocketMessage() throws IOException {
+        out.write(MessageBuilder.GUI.build());
+        out.flush();
     }
-    public void sendMessage(byte[] msg) throws IOException {sendMessage(msg, true);}
-    public void sendMessage(String msg) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), true);}
-    public void sendMessage(String msg, boolean stayConnected) throws IOException {sendMessage(msg.getBytes(StandardCharsets.UTF_8), stayConnected);}
 
     public void stopConnection() throws IOException {
         in.close();
         out.close();
         clientSocket.close();
+    }
+
+    private static Exception getException(String className, byte[] stackTrace) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        Class<? extends Exception> c = (Class<? extends Exception>) Class.forName(className);
+        Exception e = c.getConstructor().newInstance();
+        try (ByteArrayInputStream bin = new ByteArrayInputStream(stackTrace); ObjectInput in = new ObjectInputStream(bin)) {
+            e.setStackTrace((StackTraceElement[]) in.readObject());
+            return e;
+        }
     }
 
     /**
@@ -153,17 +153,28 @@ public class Client extends Thread {
         } catch (SocketException e) {
             e.printStackTrace();
         }
-        while (clientSocket.isConnected()) {
+        byte[] msg;
+        while (clientSocket.isConnected() && !clientSocket.isClosed()) {
             try {
-                String className = readStringLine();
-                Class<? extends Exception> c = (Class<? extends Exception>) Class.forName(className);
-                Exception e = c.getConstructor().newInstance();
-                byte[] stackTrace = readLine();
-//                System.out.println(Arrays.toString(stackTrace));
-                try (ByteArrayInputStream bin = new ByteArrayInputStream(stackTrace); ObjectInput in = new ObjectInputStream(bin)) {
-                    e.setStackTrace((StackTraceElement[]) in.readObject());
+                msg = readMessage();
+                if (MessageBuilder.GUI.Exception.equals(msg)) {
+                    Exception e = getException(readStringMessage(), readMessage());
                     throw e;
-                } catch (Exception ex) {
+                } else if (MessageBuilder.GUI.Request.NumberOfProjects.equals(msg)) {
+                    synchronized (RequestResult.getInstance()) {
+                        RequestResult.getInstance().setIntData(ByteBuffer.wrap(readMessage()).getInt());
+                        RequestResult.getInstance().notify();
+                    }
+                } else if (MessageBuilder.GUI.Request.NumberOfControllers.equals(msg)) {
+                    synchronized (RequestResult.getInstance()) {
+                        RequestResult.getInstance().setIntData(ByteBuffer.wrap(readMessage()).getInt());
+                        RequestResult.getInstance().notify();
+                    }
+                }
+            } catch (SocketException e) {
+                try {
+                    stopConnection();
+                } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             } catch (Exception e) {

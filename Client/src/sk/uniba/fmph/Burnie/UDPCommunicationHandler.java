@@ -55,7 +55,6 @@ public class UDPCommunicationHandler {
                 DatagramPacket packet;
                 int j = 0;
                 do {
-                    System.out.println("received message");
                     packet = new DatagramPacket(buff, buff.length);
                     try {
                         socket.receive(packet);
