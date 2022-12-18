@@ -29,6 +29,11 @@ public class ClientHandler {
         Runtime.getRuntime().addShutdownHook(new ExitProcess());
     }
 
+    /**
+     * change ID of a specific controller
+     * @param oldID current ID of said controller
+     * @param newID new ID to replace it
+     */
     public void changeControllerID(String oldID, String newID) throws IOException {
         if (!newID.matches("\\A\\p{ASCII}*\\z")) {
             throw new SocketException("Non ascii characters found!");
@@ -38,6 +43,9 @@ public class ClientHandler {
         client.writeMessage(new Message(newID.getBytes(StandardCharsets.US_ASCII)));
     }
 
+    /**
+     * @return number of active projects
+     */
     public int getNumberOfProjects() throws IOException, InterruptedException {
         client.writeMessage(new Message(MessageBuilder.GUI.Request.NumberOfProjects.build()));
         int result;
@@ -49,6 +57,9 @@ public class ClientHandler {
         return result;
     }
 
+    /**
+     * @return number of connected controllers
+     */
     public int getNumberOfControllers() throws IOException, InterruptedException {
         client.writeMessage(new Message(MessageBuilder.GUI.Request.NumberOfControllers.build()));
         int result;
