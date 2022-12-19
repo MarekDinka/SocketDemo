@@ -52,7 +52,6 @@ public class Client {
     /**
      * read message from server
      * @return message from server in form of byte[]
-     * @throws IOException TODO
      */
     private byte[] readLine() throws IOException {
         byte[] msgLength = new byte[4];
@@ -71,7 +70,6 @@ public class Client {
     /**
      * read message from server and convert it to string
      * @return message from server in string form
-     * @throws IOException TODO
      */
     private String readStringLine() throws IOException {
         byte[] msgLength = new byte[4];
@@ -120,7 +118,6 @@ public class Client {
      * Send message to server
      * @param msg message to be sent
      * @param stayConnected if true, socket will remain connected to server
-     * @throws IOException TODO
      */
     public void sendMessage(byte[] msg, boolean stayConnected) throws IOException {
         writeMessage(new Message(msg));
@@ -141,6 +138,10 @@ public class Client {
         }
     }
 
+    /**
+     * Send a xml script to server and start new project
+     * @param pathToXmlThatIsToBeSent path to the xml script
+     */
     public void performInit(String pathToXmlThatIsToBeSent) throws IOException {
         sendMessage(MessageBuilder.EXE.FileTransfer.build());
         if (!Files.exists(Paths.get(pathToXmlThatIsToBeSent), LinkOption.NOFOLLOW_LINKS)) {
@@ -154,18 +155,20 @@ public class Client {
         BufferedOutputStream output = new BufferedOutputStream(clientSocket.getOutputStream());
 
         int count;
-//        System.out.println("getting ready to transfer");
         while ((count = input.read(buffer)) > 0) {
             output.write(buffer, 0, count);
-//            System.out.println("transferring");
         }
-//        System.out.println("Done");
 
         input.close();
         output.close();
         stopConnection();
     }
 
+    /**
+     * Inform server that a project segment has come to an end
+     * @param nameOfBlock name of said block
+     * @param pathToXml id by which we will distinguish projects
+     */
     public void performEndOfSegment(String nameOfBlock, String pathToXml) throws IOException {
         sendMessage(MessageBuilder.EXE.EndOfSegment.build());
         sendMessage(nameOfBlock);
