@@ -25,7 +25,7 @@ public class Project {
 //            System.out.println(i.toString());
 //            ControllerHandler handler = findControllerByID(i.getKey());
             MockControllerHandler handler = findControllerByID(i.getKey());
-            Queue<Pair<Integer, Long>> queue = new LinkedList<>();
+            Queue<AbstractMap.SimpleEntry<Integer, Long>> queue = new LinkedList<>();
             int a = 0;
             for (String tempTime : i.getValue()) { //TODO -> check if its temp$time or time$temp
                 if (!tempTime.matches("[.0-9]+\\$[.0-9]+")) {
@@ -39,7 +39,7 @@ public class Project {
                 String[] split = tempTime.split("\\$");
                 int temperature = Integer.parseInt(split[0]);
                 long time = (long)(Float.parseFloat(split[1]));
-                queue.add(new Pair<>(temperature, time));
+                queue.add(new AbstractMap.SimpleEntry<>(temperature, time));
             }
             controllers.add(new ActiveController(handler, queue, this));
         }

@@ -5,6 +5,7 @@ import Burnie.Communication.ControllerHandler;
 import Burnie.Server;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Queue;
 
 /**
@@ -12,13 +13,13 @@ import java.util.Queue;
  */
 public class ActiveController extends Thread {
     private final ControllerHandler handler;
-    private final Queue<Pair<Integer, Long>> jobQueue;
+    private final Queue<AbstractMap.SimpleEntry<Integer, Long>> jobQueue;
     private final Project project;
     private static final byte AIR_FLOW = 100;
     private boolean endOfPhaseConfirmed, waitingForConfirmation;
     private static final long END_OF_PHASE_CONFIRMATION_TIMEOUT_IN_MILLIS = 5000;
 
-    public ActiveController(ControllerHandler handler, Queue<Pair<Integer, Long>> queue, Project project) {
+    public ActiveController(ControllerHandler handler, Queue<AbstractMap.SimpleEntry<Integer, Long>> queue, Project project) {
         this.handler = handler;
         this.jobQueue = queue;
         this.project = project;
@@ -36,7 +37,7 @@ public class ActiveController extends Thread {
         try {
             long startTime, jobTime;
             int temperature;
-            for (Pair<Integer, Long> i : jobQueue) {
+            for (AbstractMap.SimpleEntry<Integer, Long> i : jobQueue) {
                 endOfPhaseConfirmed = false;
                 waitingForConfirmation = false;
                 temperature = i.getKey();
@@ -57,7 +58,7 @@ public class ActiveController extends Thread {
 //                        }
 //                    }
                 }
-//                endOfPhaseConfirmed = true;
+                endOfPhaseConfirmed = true; //TODO -> remove
                 if (!endOfPhaseConfirmed) {
                     waitingForConfirmation = true;
                     try {
