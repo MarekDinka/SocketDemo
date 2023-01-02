@@ -20,8 +20,8 @@ public class ControllerHandler extends Thread {
         socket = sh;
         controller = new Controller(ip);
         try {
-            changeId("ABC");
-        } catch (IOException | ControllerException e) {
+            changeControllerParameters(1, (short) 2, 3);
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
