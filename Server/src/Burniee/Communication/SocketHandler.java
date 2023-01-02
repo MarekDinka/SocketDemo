@@ -29,6 +29,7 @@ public class SocketHandler {
      * @throws IOException when something goes wrong with socket
      */
     public SocketHandler(Socket s) throws IOException {
+        System.out.println("New socket connected");
         socket = s;
         out = new BufferedOutputStream(socket.getOutputStream());
         in = new BufferedInputStream(socket.getInputStream());

@@ -44,6 +44,7 @@ public class Server {
      * Start accepting clients
      */
     public void begin() {
+        UDPCommunicationHandler.sendUDPPacket(UDPCommunicationHandler.LOOKING_FOR_CONTROLLERS_MESSAGE, UDPCommunicationHandler.getBroadcastAddresses());
         while (!serverSocket.isClosed()) {
             try {
                 new SocketHandler(serverSocket.accept());
