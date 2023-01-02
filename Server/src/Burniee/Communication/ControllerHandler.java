@@ -1,8 +1,8 @@
-package Burnie.Communication;
+package Burniee.Communication;
 
-import Burnie.Controller.Controller;
-import Burnie.Controller.ControllerException;
-import Burnie.Server;
+import Burniee.Controller.Controller;
+import Burniee.Controller.ControllerException;
+import Burniee.Server;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,6 +26,10 @@ public class ControllerHandler extends Thread {
         }
     }
 
+    public boolean isActive() {
+        return socket.isActive();
+    }
+
     public void stopConnection() {
         Server.getInstance().removeController(this);
         socket.stopSocket();
@@ -43,6 +47,7 @@ public class ControllerHandler extends Thread {
     }
 
     public String getControllerID() {return controller.getID();}
+    public Controller getController() {return controller;}
 
     public void changeId(String newId) throws ControllerException, IOException {
         if (newId.length() > 15) {
@@ -68,7 +73,7 @@ public class ControllerHandler extends Thread {
     public void changeControllerParameters(int temperature, short airFlow, long time) throws IOException {
         controller.setTime(time);
         controller.setAirFlow(airFlow);
-        controller.setCurrentTemperature(temperature);
+        controller.setTargetTemperature(temperature);
 
         ByteBuffer tempBuffer = ByteBuffer.allocate(4).putInt(temperature),
                 airFlowBuffer = ByteBuffer.allocate(2).putShort(airFlow),
