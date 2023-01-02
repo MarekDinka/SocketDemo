@@ -117,6 +117,7 @@ public class ControllerHandler extends Thread {
                     if ((flags&0b00010000) > 0) {
                         throw new ControllerException("All is well"); //TODO -> inform GUI that controller is still working
                     }
+                    System.out.println(Arrays.toString(msg));
                     byte[] temp = new byte[] {msg[11], msg[12], msg[13], msg[14]};
                     controller.setCurrentTemperature(ByteBuffer.wrap(temp).getFloat());
                     System.out.println("New temperature arrived, " + controller.getCurrentTemperature());

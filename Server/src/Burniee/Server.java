@@ -48,9 +48,7 @@ public class Server {
      */
     public void begin() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> {
-            UDPCommunicationHandler.sendUDPPacket(UDPCommunicationHandler.LOOKING_FOR_CONTROLLERS_MESSAGE, UDPCommunicationHandler.getBroadcastAddresses());
-        }, 0, 3, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(() -> UDPCommunicationHandler.sendUDPPacket(UDPCommunicationHandler.LOOKING_FOR_CONTROLLERS_MESSAGE, UDPCommunicationHandler.getBroadcastAddresses()), 0, 3, TimeUnit.MINUTES);
         while (!serverSocket.isClosed()) {
             try {
                 new SocketHandler(serverSocket.accept());
