@@ -12,6 +12,7 @@ public class Main {
                 Thread.sleep(5000);
             }
         } catch (Exception e) {
+            System.out.println("END");
             e.printStackTrace();
         }
     }

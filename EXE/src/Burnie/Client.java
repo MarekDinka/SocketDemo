@@ -53,16 +53,18 @@ public class Client {
      * read message from server
      * @return message from server in form of byte[]
      */
-    private byte[] readLine() throws IOException {
+    private byte[] readMessage() throws IOException {
         byte[] msgLength = new byte[4];
         for (int i = 0; i < 4; i++) {
             msgLength[i] = (byte) in.read();
+            if (msgLength[i] == -1) {
+                throw new SocketException("Stream has been closed");
+            }
         }
         int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
-        int count = in.read(res);
-        if (count != len) {
-            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
+        for (int i = 0; i < len; i++) {
+            res[i] = (byte) in.read(); // this is required because in.read(res) ignores part of xml file for some wild reason
         }
         return res;
     }
@@ -71,19 +73,9 @@ public class Client {
      * read message from server and convert it to string
      * @return message from server in string form
      */
-    private String readStringLine() throws IOException {
-        byte[] msgLength = new byte[4];
-        for (int i = 0; i < 4; i++) {
-            msgLength[i] = (byte) in.read();
-        }
-        int len = ByteBuffer.wrap(msgLength).getInt();
-        byte[] res = new byte[len];
-        int count = in.read(res);
-        if (count != len) {
-            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
-        }
+    private String readStringMessage() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(res);
+        out.write(readMessage());
         return out.toString();
     }
 
@@ -94,7 +86,7 @@ public class Client {
             clientSocket.setSoTimeout(10000);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
-            password = readLine();
+            password = readMessage();
 
         } catch (ConnectException e) {
             throw new ConnectException("No server found!");

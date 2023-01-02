@@ -1,9 +1,8 @@
 package Burnie.Project;
 
+import Burnie.Communication.ControllerHandler;
 import Burnie.xml.XMLException;
-import javafx.util.Pair;
 import org.xml.sax.SAXException;
-import Burnie.Communication.MockControllerHandler;
 import Burnie.Controller.ControllerException;
 import Burnie.Server;
 import Burnie.xml.XMLAnalyzer;
@@ -23,18 +22,17 @@ public class Project {
         controllers = new LinkedList<>();
         for (Map.Entry<String, List<String>> i : script.entrySet()) {
 //            System.out.println(i.toString());
-//            ControllerHandler handler = findControllerByID(i.getKey());
-            MockControllerHandler handler = findControllerByID(i.getKey());
+            ControllerHandler handler = findControllerByID(i.getKey());
             Queue<AbstractMap.SimpleEntry<Integer, Long>> queue = new LinkedList<>();
-            int a = 0;
+//            int a = 0;
             for (String tempTime : i.getValue()) { //TODO -> check if its temp$time or time$temp
                 if (!tempTime.matches("[.0-9]+\\$[.0-9]+")) {
                     throw new XMLException("Expected [.0-9]+\\$[.0-9]+, got " + tempTime);
                 }
-                if (a == 5) {
-                    break;
-                }
-                a++;
+//                if (a == 5) {
+//                    break;
+//                }
+//                a++;
 //                System.out.println(tempTime);
                 String[] split = tempTime.split("\\$");
                 int temperature = Integer.parseInt(split[0]);
@@ -66,18 +64,14 @@ public class Project {
         }
     }
 
-    private MockControllerHandler findControllerByID(String id) throws ControllerException {
-        return new MockControllerHandler(id);
+    private ControllerHandler findControllerByID(String id) throws ControllerException {
+        System.out.println(id);
+        List<ControllerHandler> controllers = Server.getInstance().getControllers();
+        for (ControllerHandler c : controllers) {
+            if (c.getControllerID().equals(id)) {
+                return c;
+            }
+        }
+        throw new ControllerException("No controller with id = " + id + ", stopping");
     }
-
-//    private ControllerHandler findControllerByID(String id) throws ControllerException {
-//        List<ControllerHandler> controllers = Server.getInstance().getControllers();
-//        for (ControllerHandler c : controllers) {
-//            if (c.getControllerID().equals(id)) {
-//                return c;
-//            }
-//        }
-//        throw new ControllerException("No controller with id = " + id + ", stopping");
-//    }
-
 }

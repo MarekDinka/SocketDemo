@@ -124,6 +124,7 @@ public class Server {
      * @param th the exception
      */
     public synchronized void sendExceptionToAllActiveGUIs(Throwable th) {
+        th.printStackTrace();
         try {
             String c = th.getClass().getCanonicalName();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

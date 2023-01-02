@@ -44,7 +44,6 @@ public class SocketHandler {
 
     /**
      * Stop this socket
-     * @throws IOException when something goes wrong
      */
     public void stopSocket() {
         try {
@@ -67,57 +66,47 @@ public class SocketHandler {
         return (byte)in.read();
     }
 
-    public byte[] readMessage() throws IOException {
-        byte[] msgLength = new byte[4];
-        for (int i = 0; i < 4; i++) {
-            msgLength[i] = (byte) in.read();
-            if (msgLength[i] == -1) {
-                throw new SocketException("Stream has been closed");
+    /**
+     * Read message from socket
+     * @param special if true, the message is from controller and has a fixed length
+     * @return byte[] -> received message
+     */
+    public byte[] readMessage(boolean special) throws IOException {
+        int len;
+        if (special) {
+            len = 16;
+        } else {
+            byte[] msgLength = new byte[4];
+            for (int i = 0; i < 4; i++) {
+                msgLength[i] = (byte) in.read();
+                if (msgLength[i] == -1) {
+                    throw new SocketException("Stream has been closed");
+                }
             }
+            len = ByteBuffer.wrap(msgLength).getInt();
         }
-        int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
-        int count = in.read(res);
-        if (count != len) {
-            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
+        for (int i = 0; i < len; i++) {
+            res[i] = (byte) in.read(); // this is required because in.read(res) ignores part of xml file for some wild reason
         }
         return res;
     }
 
     /**
-     * read special(it has a fixed length) message from controller
-     * @param ignored readMessage() overload
-     * @return byte[] -> message from controller
+     * Read message from socket
+     * @return byte[] -> received message
      */
-    public byte[] readMessage(boolean ignored) throws IOException {
-        final int MESSAGE_LENGTH = 16;
-        byte[] res = new byte[MESSAGE_LENGTH];
-        int count = in.read(res);
-        if (count == -1) {
-            throw new SocketException("Stream has been closed");
-        }
-        if (count != MESSAGE_LENGTH) {
-            throw new SocketException("Bad packet received, expected length " + MESSAGE_LENGTH + "got " + count);
-        }
-        return res;
+    public byte[] readMessage() throws IOException {
+        return readMessage(false);
     }
 
+    /**
+     * Read message from socket and convert it to string
+     * @return byte[] -> received message
+     */
     public String readStringMessage() throws IOException {
-        byte[] msgLength = new byte[4];
-        for (int i = 0; i < 4; i++) {
-            msgLength[i] = (byte) in.read();
-        }
-        int len = ByteBuffer.wrap(msgLength).getInt();
-        byte[] res = new byte[len];
-        int count = in.read(res);
-        if (count == -1) {
-            throw new SocketException("Stream has been closed");
-        }
-        if (count != len) {
-            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
-        }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(res);
+        out.write(readMessage(false));
         return out.toString();
     }
 

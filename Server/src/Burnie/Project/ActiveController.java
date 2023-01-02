@@ -58,7 +58,7 @@ public class ActiveController extends Thread {
 //                        }
 //                    }
                 }
-                endOfPhaseConfirmed = true; //TODO -> remove
+                endOfPhaseConfirmed = true; //TODO -> remove -> it is here for testing purposes
                 if (!endOfPhaseConfirmed) {
                     waitingForConfirmation = true;
                     try {

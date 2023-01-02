@@ -19,6 +19,11 @@ public class ControllerHandler extends Thread {
         Server.getInstance().addController(this);
         socket = sh;
         controller = new Controller(ip);
+        try {
+            changeId("ABC");
+        } catch (IOException | ControllerException e) {
+            e.printStackTrace();
+        }
     }
 
     public void stopConnection() {
@@ -95,6 +100,7 @@ public class ControllerHandler extends Thread {
                 msg = socket.readMessage(true);
                 byte flags = msg[15];
                 if (flags == 0b0000010) {
+                    System.out.println("New ID arrived");
                     controller.setID(resolveId(msg));
                 } else if ((flags&0b00000001) == 1) {
                     if ((flags&0b00000100) > 0) {
@@ -108,6 +114,7 @@ public class ControllerHandler extends Thread {
                     }
                     byte[] temp = new byte[] {0, 0, msg[13], msg[14]};
                     controller.setCurrentTemperature(ByteBuffer.wrap(temp).getInt());
+                    System.out.println("New temperature arrived, " + controller.getCurrentTemperature());
                 } else {
                     throw new ControllerException("Unknown message" + Arrays.toString(msg));
                 }

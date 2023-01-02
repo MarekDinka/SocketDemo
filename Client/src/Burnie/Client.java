@@ -75,9 +75,8 @@ public class Client extends Thread {
         }
         int len = ByteBuffer.wrap(msgLength).getInt();
         byte[] res = new byte[len];
-        int count = in.read(res);
-        if (count != len) {
-            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
+        for (int i = 0; i < len; i++) {
+            res[i] = (byte) in.read(); // this is required because in.read(res) ignores part of xml file for some wild reason
         }
         return res;
     }
@@ -87,21 +86,8 @@ public class Client extends Thread {
      * @return message from server in string form
      */
     private String readStringMessage() throws IOException {
-        byte[] msgLength = new byte[4];
-        for (int i = 0; i < 4; i++) {
-            msgLength[i] = (byte) in.read();
-            if (msgLength[i] == -1) {
-                throw new SocketException("Stream has been closed");
-            }
-        }
-        int len = ByteBuffer.wrap(msgLength).getInt();
-        byte[] res = new byte[len];
-        int count = in.read(res);
-        if (count != len) {
-            throw new SocketException("Bad packet received, expected length " + len + "got " + count);
-        }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(res);
+        out.write(readMessage());
         return out.toString();
     }
 
