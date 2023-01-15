@@ -105,6 +105,7 @@ public class UDPCommunicationHandler extends Thread {
 
                 if (areMessagesEqual(packet.getData(), LOOKING_FOR_SERVER_MESSAGE)) {
                     sendUDPPacket(I_AM_THE_SERVER_MESSAGE, Collections.singletonList(packet.getAddress()));
+                    sendUDPPacket(I_AM_THE_SERVER_MESSAGE, getBroadcastAddresses()); //one will work
                 }
 
             } catch (IOException e) {
