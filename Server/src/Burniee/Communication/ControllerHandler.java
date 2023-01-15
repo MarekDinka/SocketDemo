@@ -8,26 +8,36 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ControllerHandler extends Thread {
     private final SocketHandler socket;
     private final Controller controller;
+    private boolean isActive = false;
 
     public ControllerHandler(SocketHandler sh, InetAddress ip) {
         Server.getInstance().addController(this);
         socket = sh;
         controller = new Controller(ip);
-        try {
-            changeControllerParameters(1, (short) 2, 3);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
     }
 
+    public boolean isConnected() {return socket.isActive();}
+
     public boolean isActive() {
-        return socket.isActive();
+        return isActive;
+    }
+
+    public synchronized void startUsing() {
+        isActive = true;
+    }
+
+    public synchronized void freeFromService() {
+        isActive = false;
     }
 
     public void stopConnection() {
@@ -91,6 +101,7 @@ public class ControllerHandler extends Thread {
      * Stop controller after big red button has been pressed
      */
     public void bigRedButton() throws IOException {
+        System.out.println("Big Red Button Function");
         socket.writeMessage(new Message(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0b10000000}, true));
     }
 
@@ -105,8 +116,8 @@ public class ControllerHandler extends Thread {
                 msg = socket.readMessage(true);
                 byte flags = msg[15];
                 if (flags == 0b0000010) {
-                    System.out.println("New ID arrived");
                     controller.setID(resolveId(msg));
+                    System.out.println("New ID arrived = " + controller.getID());
                 } else if ((flags&0b00000001) == 1) {
                     if ((flags&0b00000100) > 0) {
                         throw new ControllerException("Temperature cannot be read");
@@ -115,18 +126,16 @@ public class ControllerHandler extends Thread {
                         throw new ControllerException("DAC not found");
                     }
                     if ((flags&0b00010000) > 0) {
-                        throw new ControllerException("All is well"); //TODO -> inform GUI that controller is still working
+//                        throw new ControllerException("All is well"); //TODO -> inform GUI that controller is still working
                     }
-                    System.out.println(Arrays.toString(msg));
                     byte[] temp = new byte[] {msg[11], msg[12], msg[13], msg[14]};
-                    controller.setCurrentTemperature(ByteBuffer.wrap(temp).getFloat());
-                    System.out.println("New temperature arrived, " + controller.getCurrentTemperature());
+                    controller.setCurrentTemperature(ByteBuffer.wrap(temp).order(ByteOrder.LITTLE_ENDIAN).getFloat());
                 } else {
                     throw new ControllerException("Unknown message" + Arrays.toString(msg));
                 }
             } catch (SocketException e) {
                 stopConnection();
-                Server.getInstance().sendExceptionToAllActiveGUIs(e);
+//                Server.getInstance().sendExceptionToAllActiveGUIs(e);
             } catch (Exception e) {
                 Server.getInstance().sendExceptionToAllActiveGUIs(e);
             }

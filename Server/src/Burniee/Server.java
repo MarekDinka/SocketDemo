@@ -7,9 +7,11 @@ import Burniee.Communication.UDPCommunicationHandler;
 import Burniee.Project.Project;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +24,8 @@ public class Server {
     public static Server getInstance() {return INSTANCE;}
 
     private ServerSocket serverSocket;
-    public final static int PORT = 4002;
+    public static int PORT = 4002;
+    public final static String CONFIG_FILE_NAME = "server.config";
 
     private final List<GUIHandler> activeGUIs = new LinkedList<>();
     private final List<ControllerHandler> controllers = new LinkedList<>();
@@ -32,6 +35,23 @@ public class Server {
      * Constructor, find port and initialize TCP socket
      */
     private Server() {
+        Properties prop = new Properties();
+        File f = new File(CONFIG_FILE_NAME);
+        if (f.exists()) {
+            try (FileInputStream fis = new FileInputStream(f.getName())) {
+                prop.load(fis);
+                PORT = Integer.parseInt(prop.getProperty("PORT"));
+                System.out.println("New PORT = " + PORT);
+            } catch (IOException ignored) {}
+        } else {
+            try (FileOutputStream fos = new FileOutputStream(f.getName())) {
+                prop.setProperty("PORT", "4002");
+                prop.store(fos, null);
+                System.out.println("File created");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         try {
             serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
@@ -40,7 +60,7 @@ public class Server {
             return;
         }
         UDPCommunicationHandler.getInstance().start();
-        System.out.println("Connection established!");
+        System.out.println("Server started!");
     }
 
     /**
@@ -63,7 +83,7 @@ public class Server {
      * new GUI has connected to server
      * @param sh GUI
      */
-    public void addGUI(GUIHandler sh) {
+    public synchronized void addGUI(GUIHandler sh) {
         synchronized (activeGUIs) {
             activeGUIs.add(sh);
         }
@@ -73,17 +93,19 @@ public class Server {
      * A GUI has disconnected from server
      * @param sh GUI
      */
-    public void removeGUI(GUIHandler sh) {
+    public synchronized void removeGUI(GUIHandler sh) {
         synchronized (activeGUIs) {
             activeGUIs.remove(sh);
         }
     }
 
+    public synchronized List<GUIHandler> getAllGUIS() {return activeGUIs;}
+
     /**
      * Add a newly connected controller to list of controllers
      * @param ch handler for said controller
      */
-    public void addController(ControllerHandler ch) {
+    public synchronized void addController(ControllerHandler ch) {
         synchronized (controllers) {
             controllers.add(ch);
         }
@@ -93,19 +115,19 @@ public class Server {
      * Remove a controller that suddenly disconnected from server
      * @param ch handler for said controller
      */
-    public void removeController(ControllerHandler ch) {
+    public synchronized void removeController(ControllerHandler ch) {
         synchronized (controllers) {
             controllers.remove(ch);
         }
     }
 
-    public List<ControllerHandler> getControllers() {return controllers;}
+    public synchronized List<ControllerHandler> getControllers() {return controllers;}
 
     /**
      * Add a newly started project to list of Projects
      * @param p Project
      */
-    public void addProject(Project p) {
+    public synchronized void addProject(Project p) {
         synchronized (activeProjects) {
             activeProjects.add(p);
         }
@@ -115,23 +137,24 @@ public class Server {
      * Remove a project that is at its end
      * @param p Project
      */
-    public void removeProject(Project p) {
-        System.out.println("Removing project");
+    public synchronized void removeProject(Project p) {
+//        System.out.println("Removing project");
         synchronized (activeProjects) {
             activeProjects.remove(p);
         }
     }
 
-    public List<Project> getActiveProjects() {return activeProjects;}
+    public synchronized List<Project> getActiveProjects() {return activeProjects;}
 
     /**
      * An exception has arrisen in server or other parts, and we will attempt to send it to any active GUI
      * @param th the exception
      */
-    public synchronized void sendExceptionToAllActiveGUIs(Throwable th) {
+    public void sendExceptionToAllActiveGUIs(Throwable th) {
         th.printStackTrace();
         try {
             String c = th.getClass().getCanonicalName();
+            String msg = th.getMessage();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oo = new ObjectOutputStream(baos);
             oo.writeObject(th.getStackTrace());
@@ -142,7 +165,7 @@ public class Server {
                     toRemove.add(gui);
                     continue;
                 }
-                gui.sendException(c, exception);
+                gui.sendException(c, msg, exception);
             }
             for (GUIHandler gui : toRemove) {
                 removeGUI(gui);

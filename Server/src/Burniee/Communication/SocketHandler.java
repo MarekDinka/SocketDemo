@@ -29,10 +29,10 @@ public class SocketHandler {
      * @throws IOException when something goes wrong with socket
      */
     public SocketHandler(Socket s) throws IOException {
-        System.out.println("New socket connected");
         socket = s;
         out = new BufferedOutputStream(socket.getOutputStream());
         in = new BufferedInputStream(socket.getInputStream());
+        System.out.println("New socket connected from IP = " + socket.getInetAddress().getHostAddress());
         writeMessage(new Message(SERVER_PASSWORD));
         byte type = readTypeOfSocket();
         if (MessageBuilder.GUI.is(type)) {
@@ -42,6 +42,7 @@ public class SocketHandler {
         } else if (MessageBuilder.Controller.is(type)) {
             new ControllerHandler(this, s.getInetAddress()).start();
         } else {
+            stopSocket();
             throw new ConnectException("Unknown type of connection");
         }
     }
@@ -61,7 +62,7 @@ public class SocketHandler {
         return socket.isConnected() && !socket.isClosed();
     }
 
-    public void writeMessage(Message msg) throws IOException {
+    public synchronized void writeMessage(Message msg) throws IOException {
         out.write(msg.getMessage());
         out.flush();
     }
@@ -75,7 +76,7 @@ public class SocketHandler {
      * @param special if true, the message is from controller and has a fixed length
      * @return byte[] -> received message
      */
-    public byte[] readMessage(boolean special) throws IOException {
+    public synchronized byte[] readMessage(boolean special) throws IOException {
         int len;
         if (special) {
             len = 16;
@@ -89,6 +90,7 @@ public class SocketHandler {
             }
             len = ByteBuffer.wrap(msgLength).getInt();
         }
+        System.out.println(len);
         byte[] res = new byte[len];
         for (int i = 0; i < len; i++) {
             res[i] = (byte) in.read(); // this is required because in.read(res) ignores part of xml file for some wild reason

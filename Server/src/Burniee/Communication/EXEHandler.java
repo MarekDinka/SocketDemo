@@ -22,13 +22,15 @@ public class EXEHandler extends Thread {
                     String projectID = socket.readStringMessage();
                     String pathToFile = socket.receiveAFile();
                     Project p = new Project(pathToFile, projectID);
-                    p.begin();
+                    p.start();
                     socket.stopSocket();
                 } else if (MessageBuilder.EXE.EndOfSegment.equals(msg)) {
-                    String segmentName = socket.readStringMessage(), id = socket.readStringMessage();
+                    System.out.println("End of phase message arrived!");
+                    String id = socket.readStringMessage();
+                    System.out.println("Project id = " + id);
                     for (Project p : Server.getInstance().getActiveProjects()) {
                         if (p.getID().equals(id)) {
-                            p.confirmEndOfPhaseForAllControllers();
+                            p.confirmEndOfPhase();
                             break;
                         }
                     }

@@ -91,6 +91,20 @@ public class MessageBuilder {
                 public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
                 public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
             }
+
+            public static class GetInfoAboutProjects {
+                private static final byte ID = 'e'+3;
+
+                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
+                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
+            }
+
+            public static class TemperatureChanged {
+                private static final byte ID = 'e'+4;
+
+                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
+                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
+            }
         }
         public static class Exception {
             private static final byte ID = 'b';
@@ -102,6 +116,7 @@ public class MessageBuilder {
                 return Arrays.equals(msg, new byte[]{GUI.ID, ID});
             }
         }
+
     }
 
     public static class Controller {
