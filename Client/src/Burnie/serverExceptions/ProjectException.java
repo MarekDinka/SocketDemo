@@ -1,4 +1,4 @@
-package Burniee.Project;
+package Communication.serverExceptions;
 
 public class ProjectException extends Exception {
     public ProjectException(String msg) {

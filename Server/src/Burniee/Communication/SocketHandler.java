@@ -32,14 +32,17 @@ public class SocketHandler {
         socket = s;
         out = new BufferedOutputStream(socket.getOutputStream());
         in = new BufferedInputStream(socket.getInputStream());
-        System.out.println("New socket connected from IP = " + socket.getInetAddress().getHostAddress());
+        System.out.println("[TCP] New socket connected from IP = " + socket.getInetAddress().getHostAddress());
         writeMessage(new Message(SERVER_PASSWORD));
         byte type = readTypeOfSocket();
         if (MessageBuilder.GUI.is(type)) {
+            System.out.println("[TCP] GUI connected");
             new GUIHandler(this).start();
         } else if (MessageBuilder.EXE.is(type)) {
+            System.out.println("[TCP] EXE connected");
             new EXEHandler(this).start();
         } else if (MessageBuilder.Controller.is(type)) {
+            System.out.println("[TCP] Controller connected");
             new ControllerHandler(this, s.getInetAddress()).start();
         } else {
             stopSocket();
@@ -77,6 +80,7 @@ public class SocketHandler {
      * @return byte[] -> received message
      */
     public synchronized byte[] readMessage(boolean special) throws IOException {
+        System.out.println("[TCP] reading a message");
         int len;
         if (special) {
             len = 16;
@@ -90,11 +94,12 @@ public class SocketHandler {
             }
             len = ByteBuffer.wrap(msgLength).getInt();
         }
-        System.out.println(len);
+        System.out.println("[TCP] Receiving a message of size = " + len);
         byte[] res = new byte[len];
         for (int i = 0; i < len; i++) {
             res[i] = (byte) in.read(); // this is required because in.read(res) ignores part of xml file for some wild reason
         }
+        System.out.println("[TCP] message received");
         return res;
     }
 

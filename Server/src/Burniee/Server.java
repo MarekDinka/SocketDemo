@@ -68,7 +68,10 @@ public class Server {
      */
     public void begin() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> UDPCommunicationHandler.sendUDPPacket(UDPCommunicationHandler.LOOKING_FOR_CONTROLLERS_MESSAGE, UDPCommunicationHandler.getBroadcastAddresses()), 0, 3, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(() -> {
+                System.out.println("[UDP] Sending regular UDP discovery packet to broadcast");
+                UDPCommunicationHandler.sendUDPPacket(UDPCommunicationHandler.LOOKING_FOR_CONTROLLERS_MESSAGE, UDPCommunicationHandler.getBroadcastAddresses());
+            }, 0, 3, TimeUnit.MINUTES);
         while (!serverSocket.isClosed()) {
             try {
                 new SocketHandler(serverSocket.accept());
@@ -152,6 +155,7 @@ public class Server {
      */
     public void sendExceptionToAllActiveGUIs(Throwable th) {
         th.printStackTrace();
+        System.out.println("[TCP] Sending exception to " + getAllGUIS().size() + " GUIs");
         try {
             String c = th.getClass().getCanonicalName();
             String msg = th.getMessage();
@@ -160,16 +164,19 @@ public class Server {
             oo.writeObject(th.getStackTrace());
             byte[] exception = baos.toByteArray();
             List<GUIHandler> toRemove = new LinkedList<>();
-            for (GUIHandler gui : activeGUIs) {
-                if (!gui.getSocket().isActive()) {
-                    toRemove.add(gui);
-                    continue;
+            synchronized (activeGUIs) {
+                for (GUIHandler gui : activeGUIs) {
+                    if (!gui.getSocket().isActive()) {
+                        toRemove.add(gui);
+                        continue;
+                    }
+                    gui.sendException(c, msg, exception);
                 }
-                gui.sendException(c, msg, exception);
             }
             for (GUIHandler gui : toRemove) {
                 removeGUI(gui);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

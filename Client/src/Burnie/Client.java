@@ -1,12 +1,22 @@
-package Burnie;
+package Communication;
+
+import Communication.serverExceptions.ControllerException;
+import Communication.serverExceptions.ProjectException;
+import Communication.serverExceptions.XMLException;
+import GUI.GUI;
+import GUI.Project;
+import javafx.application.Platform;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Client extends Thread {
     private Socket clientSocket;
@@ -87,7 +97,11 @@ public class Client extends Thread {
      */
     private String readStringMessage() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(readMessage());
+        byte[] res = readMessage();
+        if (res.length == 1 && res[0] == 0) {
+            return null;
+        }
+        out.write(res);
         return out.toString();
     }
 
@@ -127,14 +141,47 @@ public class Client extends Thread {
         return clientSocket.isConnected() && !clientSocket.isClosed();
     }
 
-    private static Exception getException(String className, byte[] stackTrace) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
-        Class<? extends Exception> c = (Class<? extends Exception>) Class.forName(className);
-        Exception e = c.getConstructor().newInstance();
+    private static Exception getException(String className, String message, byte[] stackTrace) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        Class<? extends Exception> c;
+        try {
+            c = (Class<? extends Exception>) Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            if (className.contains("ControllerException")) {
+                c = ControllerException.class;
+            } else if (className.contains("ProjectException")) {
+                c = ProjectException.class;
+            } else if (className.contains("XMLException")) {
+                c = XMLException.class;
+            } else {
+                c = Exception.class;
+            }
+        }
+        Exception e = c.getConstructor(String.class).newInstance(message);
         try (ByteArrayInputStream bin = new ByteArrayInputStream(stackTrace); ObjectInput in = new ObjectInputStream(bin)) {
             e.setStackTrace((StackTraceElement[]) in.readObject());
+            e.printStackTrace();
             return e;
         }
     }
+
+    private RequestResult.Controller getController() throws ClassNotFoundException, IOException {
+        InetAddress ip = InetAddress.getByAddress(readMessage());
+        RequestResult.Controller c = new RequestResult.Controller(ip);
+        c.setID(readStringMessage());
+        c.setCurrentTemperature(ByteBuffer.wrap(readMessage()).getFloat());
+        c.setTargetTemperature(ByteBuffer.wrap(readMessage()).getInt());
+        c.setAirFlow(ByteBuffer.wrap(readMessage()).getShort());
+        c.setTime(ByteBuffer.wrap(readMessage()).getLong());
+        c.setProjectName(readStringMessage());
+        return c;
+    }
+
+
+//    private static RequestResult.Controller getController(byte[] o) throws ClassNotFoundException, IOException {
+//        try (ByteArrayInputStream bin = new ByteArrayInputStream(o); ObjectInput in = new ObjectInputStream(bin)) {
+//            return (RequestResult.Controller) in.readObject();
+//        }
+//    }
 
     /**
      * Await exceptions and resolve them
@@ -151,8 +198,8 @@ public class Client extends Thread {
             try {
                 msg = readMessage();
                 if (MessageBuilder.GUI.Exception.equals(msg)) {
-                    Exception e = getException(readStringMessage(), readMessage());
-                    throw e; //TODO -> send e somewhere
+                    Exception e = getException(readStringMessage(), readStringMessage(), readMessage());
+                    Platform.runLater(() -> {GUI.gui.alert(e);});
                 } else if (MessageBuilder.GUI.Request.NumberOfProjects.equals(msg)) {
                     synchronized (RequestResult.getInstance()) {
                         RequestResult.getInstance().setIntData(ByteBuffer.wrap(readMessage()).getInt());
@@ -163,10 +210,36 @@ public class Client extends Thread {
                         RequestResult.getInstance().setIntData(ByteBuffer.wrap(readMessage()).getInt());
                         RequestResult.getInstance().notify();
                     }
+                } else if (MessageBuilder.GUI.Request.GetInfoAboutControllers.equals(msg)) {
+                    synchronized (RequestResult.getInstance()) {
+                        int numberOfControllers = ByteBuffer.wrap(readMessage()).getInt();
+                        RequestResult.Controller[] res = new RequestResult.Controller[numberOfControllers];
+                        for (int i = 0; i < numberOfControllers; i++) {
+                            res[i] = getController();
+                        }
+                        RequestResult.getInstance().setControllers(res);
+                        RequestResult.getInstance().notify();
+                    }
+                } else if (MessageBuilder.GUI.Request.GetInfoAboutProjects.equals(msg)) {
+                    synchronized (RequestResult.getInstance()) {
+                        int numberOfProjects = ByteBuffer.wrap(readMessage()).getInt();
+                        Project[] res = new Project[numberOfProjects];
+                        for (int i = 0; i < numberOfProjects; i++) {
+                            String projectID = readStringMessage();
+                            long time = ByteBuffer.wrap(readMessage()).getLong();
+                            String phase = readStringMessage();
+                            Project p = new Project(projectID, time, phase);
+                            res[i] = p;
+                        }
+                        RequestResult.getInstance().setProjects(res);
+                        RequestResult.getInstance().notify();
+                    }
+                } else if (MessageBuilder.GUI.Request.TemperatureChanged.equals(msg)) {
+                    GUI.gui.refresh();
                 }
             } catch (SocketException e) {
                 try {
-                    System.err.println("Server disconnected, stopping connection");
+                    System.err.println("Disconnected, stopping connection");
                     stopConnection();
                 } catch (IOException ex) {
                     ex.printStackTrace();

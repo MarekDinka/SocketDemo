@@ -1,4 +1,4 @@
-package Communication;
+package Burnie;
 
 import java.util.Arrays;
 
@@ -63,55 +63,6 @@ public class MessageBuilder {
                 public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
                 public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[] {GUI.ID, Request.ID, ID});}
             }
-
-            public static class SearchForNewControllers {
-                private static final byte ID = 'd';
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
-
-            public static class BigRedButton {
-                private static final byte ID = 'e';
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
-
-            public static class StopThisController {
-                private static final byte ID = 'e'+1; //alphabet is hard, ok?
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
-
-            public static class GetInfoAboutControllers {
-                private static final byte ID = 'e'+2;
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
-
-            public static class GetInfoAboutProjects {
-                private static final byte ID = 'e'+3;
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
-
-            public static class TemperatureChanged {
-                private static final byte ID = 'e'+4;
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
-
-            public static class UnlockThisController {
-                private static final byte ID = 'e'+5;
-
-                public static byte[] build() {return new byte[]{GUI.ID, Request.ID, ID};}
-                public static boolean equals(byte[] msg) {return Arrays.equals(msg, new byte[]{GUI.ID, Request.ID, ID});}
-            }
         }
         public static class Exception {
             private static final byte ID = 'b';
@@ -123,11 +74,10 @@ public class MessageBuilder {
                 return Arrays.equals(msg, new byte[]{GUI.ID, ID});
             }
         }
-
     }
 
     public static class Controller {
-        private static final byte ID = (byte) 128;
+        private static final byte ID = 'c';
 
         public static byte[] build() {
             return new byte[]{ID};

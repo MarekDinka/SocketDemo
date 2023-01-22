@@ -1,4 +1,4 @@
-package Communication;
+package Burnie;
 
 import java.nio.ByteBuffer;
 
