@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Main server class
  */
-public class Server {
+public class Server { //TODO -> server project error, GUI -> Server delay
     private final static Server INSTANCE = new Server();
     public static Server getInstance() {return INSTANCE;}
 

@@ -127,17 +127,41 @@ public class ControllerHandler extends Thread {
         while (socket.isActive()) {
             try {
                 msg = socket.readMessage(true);
-                System.out.println("[Controller] new message from controller arrived");
+//                System.out.println("[Controller] new message from controller arrived");
                 byte flags = msg[15];
                 if (flags == 0b0000010) {
                     controller.setID(resolveId(msg));
                     System.out.println("[Controller] New ID arrived = " + controller.getID());
                 } else if ((flags&0b00000001) == 1) {
                     if ((flags&0b00000100) > 0) {
-                        throw new ControllerException("Temperature cannot be read");
+                        if (controller.getActiveError() == Controller.Error.NONE) {
+                            controller.setActiveError(Controller.Error.TEMP_CAN_NOT_BE_READ);
+                            throw new ControllerException("Temperature cannot be read");
+                        } else if (controller.getActiveError() == Controller.Error.DAC_NOT_FOUND) {
+                            controller.setActiveError(Controller.Error.BOTH);
+                            throw new ControllerException("Temperature cannot be read");
+                        }
+                    } else {
+                        if (controller.getActiveError() == Controller.Error.TEMP_CAN_NOT_BE_READ) {
+                            controller.setActiveError(Controller.Error.NONE);
+                        } else if (controller.getActiveError() == Controller.Error.BOTH) {
+                            controller.setActiveError(Controller.Error.DAC_NOT_FOUND);
+                        }
                     }
                     if ((flags&0b00001000) > 0) {
-                        throw new ControllerException("DAC not found");
+                        if (controller.getActiveError() == Controller.Error.NONE) {
+                            controller.setActiveError(Controller.Error.DAC_NOT_FOUND);
+                            throw new ControllerException("DAC not found");
+                        } else if (controller.getActiveError() == Controller.Error.TEMP_CAN_NOT_BE_READ) {
+                            controller.setActiveError(Controller.Error.BOTH);
+                            throw new ControllerException("DAC not found");
+                        }
+                    } else {
+                        if (controller.getActiveError() == Controller.Error.DAC_NOT_FOUND) {
+                            controller.setActiveError(Controller.Error.NONE);
+                        } else if (controller.getActiveError() == Controller.Error.BOTH) {
+                            controller.setActiveError(Controller.Error.TEMP_CAN_NOT_BE_READ);
+                        }
                     }
                     if ((flags&0b00010000) > 0) {
                         if (!isActive) {
@@ -152,7 +176,7 @@ public class ControllerHandler extends Thread {
                     }
                     byte[] temp = new byte[] {msg[11], msg[12], msg[13], msg[14]};
                     controller.setCurrentTemperature(ByteBuffer.wrap(temp).order(ByteOrder.LITTLE_ENDIAN).getFloat());
-                    System.out.println("[Controller] temperature arrived = " + controller.getCurrentTemperature());
+//                    System.out.println("[Controller] temperature arrived = " + controller.getCurrentTemperature());
                 } else {
                     throw new ControllerException("Unknown message" + Arrays.toString(msg));
                 }

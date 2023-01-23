@@ -1,4 +1,4 @@
-package Burnie;
+package Burniee;
 
 import java.io.*;
 import java.net.*;
@@ -13,25 +13,16 @@ public class Client {
     private Socket clientSocket;
     private BufferedOutputStream out;
     private BufferedInputStream in;
-    private final static int PORT = 4002;
+    private int PORT;
     private final static byte[] SERVER_PASSWORD = new byte[]{'a', 'b', 'c', 'd'};
     private final String SERVER_IP;
 
     /**
-     * Connect to server using differentIp
-     * @param differentIp server ip
+     * Connect to server using this port
      * @throws ConnectException if connecting goes wrong
      */
-    public Client(String differentIp) throws ConnectException {
-        SERVER_IP = differentIp;
-        connectToServer(SERVER_IP);
-    }
-
-    /**
-     * Use UDP to find server ip
-     * @throws ConnectException if connecting goes wrong
-     */
-    public Client() throws ConnectException {
+    public Client(int port) throws ConnectException {
+        PORT = port;
         String IP = "";
         try {
             connectToServer("127.0.0.1");
@@ -42,6 +33,14 @@ public class Client {
         } finally {
             SERVER_IP = IP;
         }
+    }
+
+    /**
+     * Use UDP to find server ip
+     * @throws ConnectException if connecting goes wrong
+     */
+    public Client() throws ConnectException {
+        this(4002);
     }
 
     private void writeMessage(Message msg) throws IOException {
@@ -113,7 +112,6 @@ public class Client {
      */
     public void sendMessage(byte[] msg, boolean stayConnected) throws IOException {
         writeMessage(new Message(msg));
-//        System.out.println("Message delivered!");
         if (!stayConnected) {
             stopConnection();
         }
@@ -143,31 +141,18 @@ public class Client {
         }
         File file = new File(pathToXmlThatIsToBeSent);
         sendMessage(file.getName());
-//        byte[] buffer = new byte[4096];
-//        BufferedInputStream input = new BufferedInputStream(Files.newInputStream(file.toPath()));
         byte[] bytes = Files.readAllBytes(file.toPath());
-//        BufferedOutputStream output = new BufferedOutputStream(clientSocket.getOutputStream());
-
-//        int count;
-//        while ((count = input.read(buffer, 0, buffer.length)) != -1) {
-//            System.out.println(count);
-//            output.write(buffer, 0, count);
-//        }
         sendMessage(bytes);
 
-//        input.close();
-//        output.close();
         stopConnection();
     }
 
     /**
      * Inform server that a project segment has come to an end
-     * @param nameOfBlock name of said block
      * @param pathToXml id by which we will distinguish projects
      */
-    public void performEndOfSegment(String nameOfBlock, String pathToXml) throws IOException {
+    public void performEndOfSegment(String pathToXml) throws IOException {
         sendMessage(MessageBuilder.EXE.EndOfSegment.build());
-        sendMessage(nameOfBlock);
         sendMessage(pathToXml, false);
     }
 

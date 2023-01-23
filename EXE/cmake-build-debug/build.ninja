@@ -39,7 +39,7 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = C$:/Users/Marek/Desktop/SocketDemo/EXE/cmake-build-debug/
+cmake_ninja_workdir = C$:/Users/Marek/Desktop/hot-air/src/server/EXE/cmake-build-debug/
 # =============================================================================
 # Object build statements for EXECUTABLE target EXE
 
@@ -49,7 +49,7 @@ cmake_ninja_workdir = C$:/Users/Marek/Desktop/SocketDemo/EXE/cmake-build-debug/
 
 build cmake_object_order_depends_target_EXE: phony || CMakeFiles/EXE.dir
 
-build CMakeFiles/EXE.dir/main.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/Desktop/SocketDemo/EXE/main.cpp || cmake_object_order_depends_target_EXE
+build CMakeFiles/EXE.dir/main.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/Desktop/hot-air/src/server/EXE/main.cpp || cmake_object_order_depends_target_EXE
   DEP_FILE = CMakeFiles\EXE.dir\main.cpp.obj.d
   FLAGS = -g -std=gnu++20
   OBJECT_DIR = CMakeFiles\EXE.dir
@@ -57,7 +57,7 @@ build CMakeFiles/EXE.dir/main.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/D
   TARGET_COMPILE_PDB = CMakeFiles\EXE.dir\
   TARGET_PDB = EXE.pdb
 
-build CMakeFiles/EXE.dir/Socket.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/Desktop/SocketDemo/EXE/Socket.cpp || cmake_object_order_depends_target_EXE
+build CMakeFiles/EXE.dir/Socket.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/Desktop/hot-air/src/server/EXE/Socket.cpp || cmake_object_order_depends_target_EXE
   DEP_FILE = CMakeFiles\EXE.dir\Socket.cpp.obj.d
   FLAGS = -g -std=gnu++20
   OBJECT_DIR = CMakeFiles\EXE.dir
@@ -65,7 +65,7 @@ build CMakeFiles/EXE.dir/Socket.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek
   TARGET_COMPILE_PDB = CMakeFiles\EXE.dir\
   TARGET_PDB = EXE.pdb
 
-build CMakeFiles/EXE.dir/Discovery.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/Desktop/SocketDemo/EXE/Discovery.cpp || cmake_object_order_depends_target_EXE
+build CMakeFiles/EXE.dir/Discovery.cpp.obj: CXX_COMPILER__EXE_Debug C$:/Users/Marek/Desktop/hot-air/src/server/EXE/Discovery.cpp || cmake_object_order_depends_target_EXE
   DEP_FILE = CMakeFiles\EXE.dir\Discovery.cpp.obj.d
   FLAGS = -g -std=gnu++20
   OBJECT_DIR = CMakeFiles\EXE.dir
@@ -97,7 +97,7 @@ build EXE.exe: CXX_EXECUTABLE_LINKER__EXE_Debug CMakeFiles/EXE.dir/main.cpp.obj 
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\Users\Marek\Desktop\SocketDemo\EXE\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.2.1\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D C:\Users\Marek\Desktop\hot-air\src\server\EXE\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.2.1\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -108,7 +108,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\Users\Marek\Desktop\SocketDemo\EXE\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.2.1\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\Marek\Desktop\SocketDemo\EXE -BC:\Users\Marek\Desktop\SocketDemo\EXE\cmake-build-debug"
+  COMMAND = cmd.exe /C "cd /D C:\Users\Marek\Desktop\hot-air\src\server\EXE\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.2.1\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\Marek\Desktop\hot-air\src\server\EXE -BC:\Users\Marek\Desktop\hot-air\src\server\EXE\cmake-build-debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -126,7 +126,7 @@ build EXE: phony EXE.exe
 # =============================================================================
 
 #############################################
-# Folder: C:/Users/Marek/Desktop/SocketDemo/EXE/cmake-build-debug
+# Folder: C:/Users/Marek/Desktop/hot-air/src/server/EXE/cmake-build-debug
 
 build all: phony EXE.exe
 
